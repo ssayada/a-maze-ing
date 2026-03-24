@@ -62,16 +62,6 @@ def afficher_labyrinthe_murs(fichier="maze.txt"):
         list_maze.append("\n")
         j += 1
     i = 0
-    """while i < length:
-        if i == 0:
-            list_maze.append("┗")
-        elif i == length - 1:
-            list_maze.append("┛")
-        elif i % 2 == 0:
-            list_maze.append("┻")
-        else:
-            list_maze.append("━")
-        i += 1"""
     for c in list_maze:
         print(f"{c}", end="")
 
