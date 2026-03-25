@@ -27,17 +27,25 @@ class ConfigModel(BaseModel):
 
 
 #Parse the config.txt file
-def parse_config_file() -> dict:
+def parse_config_file(config_file: str) -> dict:
     configs = {}
     try:
-        with open("config.txt") as f:
+        with open(config_file) as f:
             for line in f:
                 line = line.strip()
                 if line and "=" in line:
                     key, value = line.split("=")
                     configs[key.strip()] = value.strip()
+        for k in configs.keys():
+            if k == "WIDTH" or k == "HEIGHT":
+                configs[k] = int(configs[k])
+            elif k == "ENTRY" or k == "EXIT":
+                x, y = configs[k].split(',')
+                configs[k] = (int(x), int(y))
+            elif k == "PERFECT":
+                configs[k] = bool(configs[k])
     except ValueError:
-        print(f"Invalid 'config.txt' file: too many '=' in 'line {line}'.")
+        print(f"Invalid '{config_file}' file: too many '=' in 'line {line}'.")
         return {}
     if verify_config_file(configs):
         return configs
@@ -53,7 +61,7 @@ def verify_config_file(configs: dict) -> bool:
             raise EntryExitError("ENTRY and EXIT points are identic.")
         return True
     except ValidationError:
-        print("Invalid 'config.txt' file: missing a mandatory key.")
+        print("Invalid '{config_file}' file: missing a mandatory key.")
         return False
     except EntryExitError as e:
         print(f"Error: {e}")
