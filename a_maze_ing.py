@@ -4,7 +4,13 @@ from maze_gen.ourtypes import Dir
 from maze_gen.generator import parse_config_file
 from solver import a_star, path_to_moves, draw_path_on_out
 from symbol import Symbol
-symbol = Symbol("C")
+from beautify import beautify_junctions
+from cinematique_launch import title_screen
+import time
+
+
+symb_type = "C"
+symbol = Symbol(symb_type, 2)
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     grid: list[list[int]] = []
@@ -84,10 +90,22 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     moves = path_to_moves(path)
     draw_path_on_out(out, path, symbol.PATH)
 
+    if symbol.round == 2:
+        beautify_junctions(out, symb_type)
     return (["".join(row) for row in out], moves)
 
 
 def launcher() -> None:
+    def _run(stdscr):
+        title_screen(stdscr, duration=3.0, fps=30)
+
+        # Ensuite tu peux afficher ton labyrinthe / menu / jeu
+        stdscr.erase()
+        stdscr.addstr(0, 0, "Loading maze...")
+        stdscr.refresh()
+        time.sleep(0.3)
+
+    curses.wrapper(_run)
     maze_lines, moves = afficher_labyrinthe_murs()
     for line in maze_lines:
         print(line)
