@@ -4,7 +4,7 @@ from maze_gen.ourtypes import Dir
 from maze_gen.generator import parse_config_file
 from solver import a_star, path_to_moves, draw_path_on_out
 from symbol import Symbol
-symbol = Symbol("C")
+symbol = Symbol("C", 1)
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     grid: list[list[int]] = []
