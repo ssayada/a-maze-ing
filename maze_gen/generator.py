@@ -43,6 +43,7 @@ def maze_generator() -> None:
 
 def main() -> None:
     conf_dict = parse_config_file()
+    print(conf_dict)
     verify_config_file(conf_dict)
 
 
