@@ -1,12 +1,14 @@
 from pydantic import BaseModel, field_validator, ValidationError
 
 
+#Custom error if ENTRY and EXIT are on the same coordinates
 class EntryExitError(Exception):
     def __init__(self, message) -> None:
         self.message = message
         super().__init__(self.message)
 
 
+#Pydantic model which is used to verify the config.txt file
 class ConfigModel(BaseModel):
     WIDTH: int
     HEIGHT: int
@@ -24,6 +26,7 @@ class ConfigModel(BaseModel):
         return v
 
 
+#Parse the config.txt file
 def parse_config_file() -> dict:
     configs = {}
     try:
@@ -36,10 +39,14 @@ def parse_config_file() -> dict:
     except ValueError:
         print(f"Invalid 'config.txt' file: too many '=' in 'line {line}'.")
         return {}
-    return configs
+    if verify_config_file(configs):
+        return configs
+    else:
+        return {}
 
 
-def verify_config_file(configs: dict) -> None:
+#Verify the config.txt file with pydantic and the custom error
+def verify_config_file(configs: dict) -> bool:
     try:
         verif = ConfigModel(**configs)
         if configs['ENTRY'] == configs['EXIT']:
@@ -50,19 +57,4 @@ def verify_config_file(configs: dict) -> None:
         return False
     except EntryExitError as e:
         print(f"Error: {e}")
-
-
-def maze_generator() -> None:
-    pass
-
-
-def main() -> None:
-    conf_dict = parse_config_file()
-    if not conf_dict:
-        return
-    if not verify_config_file(conf_dict):
-        return
-
-
-if __name__ == '__main__':
-    main()
+        return False
