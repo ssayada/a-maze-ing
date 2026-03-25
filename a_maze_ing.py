@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import curses
 from maze_gen.ourtypes import Dir
+from maze_gen.generator import parse_config_file
 
 H_WALL = "━"
 V_WALL = "┃"
@@ -31,6 +32,15 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
 
 
 def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
+    conf_file = parse_config_file()
+    entry = conf_file.get("ENTRY")
+    entry = entry.split(",")
+    entry[0] = int(entry[0])
+    entry[1] = int(entry[1])
+    exit = conf_file.get("EXIT")
+    exit = exit.split(",")
+    exit[0] = int(exit[0])
+    exit[1] = int(exit[1])
     try:
         grid = lire_maze_bits(fichier)
     except ValueError as e:
@@ -58,6 +68,21 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
             out[2 * y + 2][2 * x + 1] = H_WALL if (cell & Dir.S) else FILL    # bas
             out[2 * y + 1][2 * x] = V_WALL if (cell & Dir.W) else FILL        # gauche
             out[2 * y + 1][2 * x + 2] = V_WALL if (cell & Dir.E) else FILL    # droite
+    # Ajout des points d'entres et sortis
+    while entry[0] != exit[0]:
+        if out[entry[0]][entry[1]] == FILL:
+            out[entry[0]][entry[1]] = "#"
+            break
+        else:
+            entry[0] += 1
+            entry[1] += 1
+    while entry[0] != exit[0]:
+        if out[exit[0]][exit[1]] == FILL:
+            out[exit[0]][exit[1]] = "$"
+            break
+        else:
+            exit[0] += 1
+            exit[1] += 1
 
     return ["".join(row) for row in out]
 
