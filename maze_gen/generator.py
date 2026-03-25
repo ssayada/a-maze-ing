@@ -20,21 +20,27 @@ class ConfigModel(BaseModel):
 
 def parse_config_file() -> dict:
     configs = {}
-    with open("../config.txt") as f:
-        for line in f:
-            line = line.strip()
-            if line and "=" in line:
-                key, value = line.split("=")
-                configs[key.strip()] = value.strip()
+    try:
+        with open("config.txt") as f:
+            for line in f:
+                line = line.strip()
+                if line and "=" in line:
+                    key, value = line.split("=")
+                    print(key, value)
+                    configs[key.strip()] = value.strip()
+    except ValueError:
+        print(f"Invalid 'config.txt' file: too many '=' in 'line {line}'")
+        return {}
     return configs
 
 
 def verify_config_file(configs: dict) -> None:
     try:
         verif = ConfigModel(**configs)
-        print(verif)
+        return True
     except ValidationError as e:
-        print(e)
+        print("Invalid 'config.txt' file: missing a mandatory key.")
+        return False
 
 
 def maze_generator() -> None:
@@ -43,8 +49,10 @@ def maze_generator() -> None:
 
 def main() -> None:
     conf_dict = parse_config_file()
-    print(conf_dict)
-    verify_config_file(conf_dict)
+    if not conf_dict:
+        return
+    if not verify_config_file(conf_dict):
+        return
 
 
 if __name__ == '__main__':
