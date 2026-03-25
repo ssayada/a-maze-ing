@@ -30,7 +30,7 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     return grid
 
 
-def afficher_labyrinthe_murs(fichier="maze.txt") -> None:
+def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     try:
         grid = lire_maze_bits(fichier)
     except ValueError as e:
@@ -59,11 +59,13 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> None:
             out[2 * y + 1][2 * x] = V_WALL if (cell & Dir.W) else FILL        # gauche
             out[2 * y + 1][2 * x + 2] = V_WALL if (cell & Dir.E) else FILL    # droite
 
-    print("\n".join("".join(row) for row in out))
+    return ["".join(row) for row in out]
 
 
 def launcher() -> None:
-    afficher_labyrinthe_murs()
+    maze = afficher_labyrinthe_murs()
+    for f in maze:
+        print(f"{f}")
 
 
 if __name__ == "__main__":
