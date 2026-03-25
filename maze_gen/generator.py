@@ -2,14 +2,14 @@ from pydantic import BaseModel, field_validator, ValidationError
 
 
 class ConfigModel(BaseModel):
-    width: int
-    length: int
-    entry_point: tuple[int, int]
-    exit_point: tuple[int, int]
-    output_file: str
-    perfect: bool
+    WIDTH: int
+    HEIGHT: int
+    ENTRY: tuple[int, int]
+    EXIT: tuple[int, int]
+    OUTPUT_FILE: str
+    PERFECT: bool
 
-    @field_validator("entry_point", "exit_point", mode="before")
+    @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod
     def parse_coords(cls, v):
         if isinstance(v, str):
