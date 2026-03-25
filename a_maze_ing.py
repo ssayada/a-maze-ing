@@ -33,6 +33,8 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
 
 def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     conf_file = parse_config_file()
+    if fichier is None:
+        fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
 
     # ENTRY / EXIT attendus en coordonnées "cellules" : x,y sur grid
     ex, ey = map(int, conf_file.get("ENTRY").split(","))
