@@ -33,57 +33,49 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
 
 def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     conf_file = parse_config_file()
-    entry = conf_file.get("ENTRY")
-    entry = entry.split(",")
-    entry[0] = int(entry[0])
-    entry[1] = int(entry[1])
-    exit = conf_file.get("EXIT")
-    exit = exit.split(",")
-    exit[0] = int(exit[0])
-    exit[1] = int(exit[1])
+
+    # ENTRY / EXIT attendus en coordonnées "cellules" : x,y sur grid
+    ex, ey = map(int, conf_file.get("ENTRY").split(","))
+    sx, sy = map(int, conf_file.get("EXIT").split(","))
+
     try:
         grid = lire_maze_bits(fichier)
     except ValueError as e:
         print(e)
         return
-    width = len(grid)        # nb de lignes (Y)
-    length = len(grid[0])    # nb de colonnes (X)
 
-    out = [[FILL for _ in range(2 * length + 1)] for _ in range(2 * width + 1)]
+    height = len(grid)        # nb de lignes (Y)
+    width = len(grid[0])      # nb de colonnes (X)
 
-    # intersections (optionnel)
-    for yy in range(0, 2 * width + 1, 2):
-        for xx in range(0, 2 * length + 1, 2):
-            out[yy][xx] = DOT
+    # Validation des bornes
+    if not (0 <= ex < width and 0 <= ey < height):
+        raise ValueError(f"ENTRY hors labyrinthe: ({ex},{ey}) pour width={width}, height={height}")
+    if not (0 <= sx < width and 0 <= sy < height):
+        raise ValueError(f"EXIT hors labyrinthe: ({sx},{sy}) pour width={width}, height={height}")
 
-    for y in range(width):
-        for x in range(length):
+    out = [[" " for _ in range(2 * width + 1)] for _ in range(2 * height + 1)]
+
+    # intersections
+    for yy in range(0, 2 * height + 1, 2):
+        for xx in range(0, 2 * width + 1, 2):
+            out[yy][xx] = "╋"
+
+    # murs
+    for y in range(height):
+        for x in range(width):
             cell = grid[y][x]
+            out[2 * y + 1][2 * x + 1] = " "
 
-            # intérieur de la cellule
-            out[2 * y + 1][2 * x + 1] = FILL
+            out[2 * y][2 * x + 1]     = "━" if (cell & Dir.N) else " "
+            out[2 * y + 2][2 * x + 1] = "━" if (cell & Dir.S) else " "
+            out[2 * y + 1][2 * x]     = "┃" if (cell & Dir.W) else " "
+            out[2 * y + 1][2 * x + 2] = "┃" if (cell & Dir.E) else " "
 
-            # murs selon bits
-            out[2 * y][2 * x + 1] = H_WALL if (cell & Dir.N) else FILL        # haut
-            out[2 * y + 2][2 * x + 1] = H_WALL if (cell & Dir.S) else FILL    # bas
-            out[2 * y + 1][2 * x] = V_WALL if (cell & Dir.W) else FILL        # gauche
-            out[2 * y + 1][2 * x + 2] = V_WALL if (cell & Dir.E) else FILL    # droite
-    
-    # Ajout des points d'entres et sortis
-    while entry[0] != exit[0]:
-        if out[entry[0]][entry[1]] == FILL:
-            out[entry[0]][entry[1]] = "#"
-            break
-        else:
-            entry[0] += 1
-            entry[1] += 1
-    while entry[0] != exit[0]:
-        if out[exit[0]][exit[1]] == FILL:
-            out[exit[0]][exit[1]] = "$"
-            break
-        else:
-            exit[0] += 1
-            exit[1] += 1
+    # Placement direct sur l'affichage (centre de cellule)
+    entry_r, entry_c = 2 * ey + 1, 2 * ex + 1
+    exit_r, exit_c = 2 * sy + 1, 2 * sx + 1
+    out[entry_r][entry_c] = "#"
+    out[exit_r][exit_c] = "$"
 
     return ["".join(row) for row in out]
 
