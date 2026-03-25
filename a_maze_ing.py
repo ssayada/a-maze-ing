@@ -3,12 +3,8 @@ import curses
 from maze_gen.ourtypes import Dir
 from maze_gen.generator import parse_config_file
 from solver import a_star, path_to_moves, draw_path_on_out
-
-H_WALL = "━"
-V_WALL = "┃"
-FILL = " "
-DOT = "╋"  # intersection (simple)
-
+from symbol import Symbol
+symbol = Symbol("C")
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     grid: list[list[int]] = []
@@ -61,24 +57,24 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     # intersections
     for yy in range(0, 2 * height + 1, 2):
         for xx in range(0, 2 * width + 1, 2):
-            out[yy][xx] = "╋"
+            out[yy][xx] = symbol.DOT
 
     # murs
     for y in range(height):
         for x in range(width):
             cell = grid[y][x]
-            out[2 * y + 1][2 * x + 1] = " "
+            out[2 * y + 1][2 * x + 1] = symbol.FILL
 
-            out[2 * y][2 * x + 1]     = "━" if (cell & Dir.N) else " "
-            out[2 * y + 2][2 * x + 1] = "━" if (cell & Dir.S) else " "
-            out[2 * y + 1][2 * x]     = "┃" if (cell & Dir.W) else " "
-            out[2 * y + 1][2 * x + 2] = "┃" if (cell & Dir.E) else " "
+            out[2 * y][2 * x + 1]     = symbol.H_WALL if (cell & Dir.N) else symbol.FILL
+            out[2 * y + 2][2 * x + 1] = symbol.H_WALL if (cell & Dir.S) else symbol.FILL
+            out[2 * y + 1][2 * x]     = symbol.V_WALL if (cell & Dir.W) else symbol.FILL
+            out[2 * y + 1][2 * x + 2] = symbol.V_WALL if (cell & Dir.E) else symbol.FILL
 
     # Placement direct sur l'affichage (centre de cellule)
     entry_r, entry_c = 2 * ey + 1, 2 * ex + 1
     exit_r, exit_c = 2 * sy + 1, 2 * sx + 1
-    out[entry_r][entry_c] = "#"
-    out[exit_r][exit_c] = "$"
+    out[entry_r][entry_c] = symbol.ENTRY
+    out[exit_r][exit_c] = symbol.EXIT
 
     start = (ex, ey)
     goal = (sx, sy)
@@ -86,7 +82,7 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     if path is None:
         raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
     moves = path_to_moves(path)
-    draw_path_on_out(out, path, symbol="%")
+    draw_path_on_out(out, path, symbol.PATH)
 
     return (["".join(row) for row in out], moves)
 
