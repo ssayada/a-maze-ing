@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 import curses
-from maze_gen.types import Dir
+from maze_gen.ourtypes import Dir
 
 H_WALL = "━"
 V_WALL = "┃"
