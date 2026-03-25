@@ -1,6 +1,12 @@
 from pydantic import BaseModel, field_validator, ValidationError
 
 
+class EntryExitError(Exception):
+    def __init__(self, message) -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
 class ConfigModel(BaseModel):
     WIDTH: int
     HEIGHT: int
@@ -26,10 +32,9 @@ def parse_config_file() -> dict:
                 line = line.strip()
                 if line and "=" in line:
                     key, value = line.split("=")
-                    print(key, value)
                     configs[key.strip()] = value.strip()
     except ValueError:
-        print(f"Invalid 'config.txt' file: too many '=' in 'line {line}'")
+        print(f"Invalid 'config.txt' file: too many '=' in 'line {line}'.")
         return {}
     return configs
 
@@ -37,10 +42,14 @@ def parse_config_file() -> dict:
 def verify_config_file(configs: dict) -> None:
     try:
         verif = ConfigModel(**configs)
+        if configs['ENTRY'] == configs['EXIT']:
+            raise EntryExitError("ENTRY and EXIT points are identic.")
         return True
-    except ValidationError as e:
+    except ValidationError:
         print("Invalid 'config.txt' file: missing a mandatory key.")
         return False
+    except EntryExitError as e:
+        print(f"Error: {e}")
 
 
 def maze_generator() -> None:
