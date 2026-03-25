@@ -24,13 +24,18 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     length = len(grid[0])
     for y, row in enumerate(grid):
         if len(row) != length:
+            # Ton message personnalisé
             raise ValueError(f"maze.txt: ligne {y} de longueur {len(row)} au lieu de {length}")
 
     return grid
 
 
 def afficher_labyrinthe_murs(fichier="maze.txt") -> None:
-    grid = lire_maze_bits(fichier)
+    try:
+        grid = lire_maze_bits(fichier)
+    except ValueError as e:
+        print(e)
+        return
     width = len(grid)        # nb de lignes (Y)
     length = len(grid[0])    # nb de colonnes (X)
 
