@@ -2,6 +2,7 @@
 import curses
 from maze_gen.ourtypes import Dir
 from maze_gen.generator import parse_config_file
+from solver import a_star, path_to_moves, draw_path_on_out
 
 H_WALL = "━"
 V_WALL = "┃"
@@ -79,13 +80,22 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     out[entry_r][entry_c] = "#"
     out[exit_r][exit_c] = "$"
 
-    return ["".join(row) for row in out]
+    start = (ex, ey)
+    goal = (sx, sy)
+    path = a_star(grid, start, goal)
+    if path is None:
+        raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
+    moves = path_to_moves(path)
+    draw_path_on_out(out, path, symbol="%")
+
+    return (["".join(row) for row in out], moves)
 
 
 def launcher() -> None:
-    maze = afficher_labyrinthe_murs()
-    for f in maze:
-        print(f"{f}")
+    maze_lines, moves = afficher_labyrinthe_murs()
+    for line in maze_lines:
+        print(line)
+    print(moves)
 
 
 if __name__ == "__main__":
