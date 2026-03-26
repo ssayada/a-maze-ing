@@ -1,6 +1,6 @@
 from maze_gen.generator import parse_config_file
 from maze_gen.maze_generator import maze_gen
-from amazing_anil import launcher
+from a_maze_ing import launcher
 
 
 def main():
