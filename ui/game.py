@@ -45,31 +45,54 @@ def game_screen(
     stdscr,
     render_fn: RenderFn,
     on_regenerate: Optional[RegenerateFn] = None,
-    path_color_name = "Rouge",
+    path_color_name: str = "Rouge",
+    entry_color_name: str = "Vert",
+    exit_color_name: str = "Jaune",
     title: str = "A-MAZE-ING",
 ) -> str:
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
 
-    # couleurs
+        # couleurs
     if curses.has_colors():
         curses.start_color()
         try:
             curses.use_default_colors()
         except curses.error:
             pass
-        c = Colors.to_curses(path_color_name)
-        curses.init_pair(1, c, c)
+
+        path_c = Colors.to_curses(path_color_name)
+        entry_c = Colors.to_curses(entry_color_name)
+        exit_c = Colors.to_curses(exit_color_name)
+
+        # Chemin: bloc (fond coloré)
+        curses.init_pair(1, path_c, path_c)
         PATH_ATTR = curses.color_pair(1)
+
+        # Entry/Exit: texte coloré sur fond terminal
+        curses.init_pair(2, entry_c, -1)
+        ENTRY_ATTR = curses.color_pair(2) | curses.A_BOLD
+
+        curses.init_pair(3, exit_c, -1)
+        EXIT_ATTR = curses.color_pair(3) | curses.A_BOLD
     else:
-        PATH_ATTR = curses.A_REVERSE  # fallback
+        PATH_ATTR = curses.A_REVERSE
+        ENTRY_ATTR = curses.A_BOLD
+        EXIT_ATTR = curses.A_BOLD
 
     while True:
         maze_lines, moves, path = render_fn()
 
         # transforme path (cell coords) => positions dans le rendu "out"
         path_pos = _path_to_out_positions(path)
+        start_pos = None
+        goal_pos = None
+        if path:
+            xs, ys = path[0]
+            xg, yg = path[-1]
+            start_pos = (2 * ys + 1, 2 * xs + 1)
+            goal_pos = (2 * yg + 1, 2 * xg + 1)
 
         stdscr.erase()
         h, w = stdscr.getmaxyx()
@@ -110,7 +133,12 @@ def game_screen(
                     x = left + c
                     if x >= w - 1:
                         break
-                    if (r, c) in path_pos:
+                    # Priorité: ENTRY -> EXIT -> PATH -> normal
+                    if start_pos is not None and (r, c) == start_pos:
+                        _safe_addch(stdscr, y, x, ch, ENTRY_ATTR)  # ch devrait être '#'
+                    elif goal_pos is not None and (r, c) == goal_pos:
+                        _safe_addch(stdscr, y, x, ch, EXIT_ATTR)   # ch devrait être '$'
+                    elif (r, c) in path_pos:
                         _safe_addch(stdscr, y, x, " ", PATH_ATTR)
                     else:
                         _safe_addch(stdscr, y, x, ch)

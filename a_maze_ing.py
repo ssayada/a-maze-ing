@@ -107,6 +107,8 @@ def launcher() -> None:
             "SYMBOL_THEME": "A",
             "BEAUTIFY": False,
             "PATH_COLOR": "Rouge",
+            "ENTRY_COLOR": "Rouge",
+            "EXIT_COLOR": "Vert",
         }
 
         """def regenerate() -> None:
@@ -140,8 +142,10 @@ def launcher() -> None:
                 game_screen(
                     stdscr,
                     render_fn=render,
-                    on_regenerate=None,  # touche R dans game_screen
+                    on_regenerate=None,
                     path_color_name=settings["PATH_COLOR"],
+                    entry_color_name=settings["ENTRY_COLOR"],
+                    exit_color_name=settings["EXIT_COLOR"],
                     title="A-MAZE-ING",
                 )
                 # retour game_screen -> menu
