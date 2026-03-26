@@ -8,6 +8,31 @@ RenderFn = Callable[[], tuple[list[str], str, list[tuple[int, int]]]]
 RegenerateFn = Callable[[], None]
 
 
+def _path_to_out_positions(path: list[tuple[int, int]]) -> set[tuple[int, int]]:
+    pos: set[tuple[int, int]] = set()
+    if not path:
+        return pos
+
+    # centre de la 1ère cellule
+    x0, y0 = path[0]
+    r0, c0 = 2 * y0 + 1, 2 * x0 + 1
+    pos.add((r0, c0))
+
+    for (x1, y1) in path[1:]:
+        r1, c1 = 2 * y1 + 1, 2 * x1 + 1
+
+        # ajoute le segment entre (r0,c0) et (r1,c1) : il est à mi-chemin
+        rm, cm = (r0 + r1) // 2, (c0 + c1) // 2
+        pos.add((rm, cm))
+
+        # ajoute le centre de la cellule suivante
+        pos.add((r1, c1))
+
+        r0, c0 = r1, c1
+
+    return pos
+
+
 def _safe_addch(stdscr, y: int, x: int, ch: str, attr: int = 0) -> bool:
     try:
         stdscr.addch(y, x, ch, attr)
@@ -44,7 +69,7 @@ def game_screen(
         maze_lines, moves, path = render_fn()
 
         # transforme path (cell coords) => positions dans le rendu "out"
-        path_pos = {(2 * y + 1, 2 * x + 1) for (x, y) in path}
+        path_pos = _path_to_out_positions(path)
 
         stdscr.erase()
         h, w = stdscr.getmaxyx()
