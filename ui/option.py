@@ -28,7 +28,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             elif f == "HEIGHT":
                 line = f"HEIGHT: {settings['HEIGHT']}"
             elif f == "SYMBOL_THEME":
-                line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}  (A/B/C)"
+                line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
                 line = f"BEAUTIFY: {'ON' if settings['BEAUTIFY'] else 'OFF'}"
             elif f == "PATH_COLOR":
