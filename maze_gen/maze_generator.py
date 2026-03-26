@@ -81,7 +81,6 @@ class Maze:
 
 
     def break_north(self, x, y) -> None:
-        print(y, x)
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 1]
 
 
@@ -129,7 +128,7 @@ class Maze:
     def south_open(self, x, y) -> bool:
         if ((0 <= self.hexa.index(self.maze[y][x]) <= 3
             or 8 <= self.hexa.index(self.maze[y][x]) <= 11)
-            and x < self.config['HEIGHT'] - 1):
+            and y < self.config['HEIGHT'] - 1):
             return True
         return False
 
@@ -153,7 +152,7 @@ class Maze:
         return False
 
 
-    def move_back(self, x, y) -> None:
+    def move_back(self, x, y) -> tuple:
         while self.adjacents_visited(x, y):
             move = randint(0, 3)
             if move == 0 and self.north_open(x, y):
@@ -164,43 +163,79 @@ class Maze:
                 y += 1
             if move == 3 and self.west_open(x, y):
                 x -= 1
-            print(f"x: {x}, y: {y}")
-            for m in self.get_maze():
-                print(m)
-            print()
-            sleep(0.01)
         return x, y
 
 
-def create_path(maze: Maze) -> None:
-    x, y = maze.get_entry()
-    x_ex, y_ex = maze.get_exit()
-    #for i in range(100):
-    while not (x == x_ex and y == y_ex):
-        movement = randint(0, 3)
-        if maze.adjacents_visited(x, y):
-            x, y = maze.move_back(x, y)
-        elif (movement == 0):
-            if maze.north_possible(x, y):
-                maze.break_north(x, y)
-                y -= 1
-                maze.break_south(x, y)
-        elif (movement == 1):
-            if maze.east_possible(x, y):
-                maze.break_east(x, y)
-                x += 1
-                maze.break_west(x, y)
-        elif (movement == 2):
-            if maze.south_possible(x, y):
-                maze.break_south(x, y)
-                y += 1
-                maze.break_north(x, y)
-        elif (movement == 3):
-            if maze.west_possible(x, y):
-                maze.break_west(x, y)
-                x -= 1
-                maze.break_east(x, y)
-    print(x, y)
+    def create_path(self) -> None:
+        x, y = self.get_entry()
+        x_ex, y_ex = self.get_exit()
+        while not (x == x_ex and y == y_ex):
+            movement = randint(0, 3)
+            if self.adjacents_visited(x, y):
+                x, y = self.move_back(x, y)
+            elif (movement == 0):
+                if self.north_possible(x, y):
+                    self.break_north(x, y)
+                    y -= 1
+                    self.break_south(x, y)
+            elif (movement == 1):
+                if self.east_possible(x, y):
+                    self.break_east(x, y)
+                    x += 1
+                    self.break_west(x, y)
+            elif (movement == 2):
+                if self.south_possible(x, y):
+                    self.break_south(x, y)
+                    y += 1
+                    self.break_north(x, y)
+            elif (movement == 3):
+                if self.west_possible(x, y):
+                    self.break_west(x, y)
+                    x -= 1
+                    self.break_east(x, y)
+
+
+    def is_complete(self) -> bool:
+        for m in self.maze:
+            for c in m:
+                if c == 'F':
+                    return False
+        return True
+
+
+    def open_path(self, x, y) -> None:
+        while True:
+            move = randint(0, 3)
+            if move == 0:
+                if y > 0 and self.is_visited(x, y - 1):
+                    self.break_north(x, y)
+                    self.break_south(x, y - 1)
+                    return
+            elif move == 1:
+                if x < self.config['WIDTH'] - 1 and self.is_visited(x + 1, y):
+                    self.break_east(x, y)
+                    self.break_west(x + 1, y)
+                    return
+            elif move == 2:
+                if y < self.config['HEIGHT'] - 1 and self.is_visited(x, y + 1):
+                    self.break_south(x, y)
+                    self.break_north(x, y + 1)
+                    return
+            elif move == 3:
+                if x > 0 and self.is_visited(x - 1, y):
+                    self.break_west(x, y)
+                    self.break_east(x - 1, y)
+                    return
+            print(f"\nx: {x}, y: {y}")
+            for m in self.maze:
+                print(m)
+
+
+    def complete_maze(self, perfect: bool) -> None:
+        for y in range(0, len(self.maze)):
+            for x in range(0, len(self.maze[y])):
+                if not self.is_visited(x, y):
+                    self.open_path(x, y)
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
@@ -209,9 +244,10 @@ def maze_gen(configs: dict, maze_file: str) -> None:
     '''
     try:
         maze = Maze(configs)
-        create_path(maze)
-    except KeyboardInterrupt:
-        print("wait bro")
+        maze.create_path()
+        maze.complete_maze(1)
+    except KeyboardInterrupt as e:
+        print(e)
     finally:
         with open(maze_file, 'w') as maze_open:
             for l in maze.get_maze():
