@@ -54,6 +54,12 @@ class Maze:
         if self.maze[y][x] != 'F':
             return True
         return False
+    
+
+    def is_forty_two(self, x, y) -> bool:
+        if self.maze[y][x] not in self.hexa:
+            return True
+        return False
 
 
     def adjacents_visited(self, x, y) -> bool:
@@ -77,6 +83,8 @@ class Maze:
             return False
         if self.is_visited(x, y - 1):
             return False
+        if self.is_forty_two(x, y - 1):
+            return False
         return True
 
 
@@ -95,6 +103,8 @@ class Maze:
         if x >= self.config['WIDTH'] - 1:
             return False
         if self.is_visited(x + 1, y):
+            return False
+        if self.is_forty_two(x + 1, y):
             return False
         return True
 
@@ -118,6 +128,8 @@ class Maze:
             return False
         if self.is_visited(x, y + 1):
             return False
+        if self.is_forty_two(x, y + 1):
+            return False
         return True
 
 
@@ -138,6 +150,8 @@ class Maze:
             return False
         if self.is_visited(x - 1, y):
             return False
+        if self.is_forty_two(x - 1, y):
+            return False
         return True
 
 
@@ -156,13 +170,17 @@ class Maze:
         while self.adjacents_visited(x, y):
             move = randint(0, 3)
             if move == 0 and self.north_open(x, y):
-                y -= 1
+                if not self.is_forty_two(x, y - 1):
+                    y -= 1
             if move == 1 and self.east_open(x, y):
-                x += 1
+                if not self.is_forty_two(x + 1, y):
+                    x += 1
             if move == 2 and self.south_open(x, y):
-                y += 1
+                if not self.is_forty_two(x, y + 1):
+                    y += 1
             if move == 3 and self.west_open(x, y):
-                x -= 1
+                if not self.is_forty_two(x - 1, y):
+                    x -= 1
         return x, y
 
 
@@ -174,22 +192,22 @@ class Maze:
             if self.adjacents_visited(x, y):
                 x, y = self.move_back(x, y)
             elif (movement == 0):
-                if self.north_possible(x, y):
+                if self.north_possible(x, y) and not self.is_forty_two(x, y - 1):
                     self.break_north(x, y)
                     y -= 1
                     self.break_south(x, y)
             elif (movement == 1):
-                if self.east_possible(x, y):
+                if self.east_possible(x, y) and not self.is_forty_two(x + 1, y):
                     self.break_east(x, y)
                     x += 1
                     self.break_west(x, y)
             elif (movement == 2):
-                if self.south_possible(x, y):
+                if self.south_possible(x, y) and not self.is_forty_two(x, y + 1):
                     self.break_south(x, y)
                     y += 1
                     self.break_north(x, y)
             elif (movement == 3):
-                if self.west_possible(x, y):
+                if self.west_possible(x, y) and not self.is_forty_two(x - 1, y):
                     self.break_west(x, y)
                     x -= 1
                     self.break_east(x, y)
@@ -203,54 +221,134 @@ class Maze:
         return True
 
 
-    def open_path(self, x, y) -> None:
-        while True:
+    def open_path_perfect(self, x, y) -> None:
+        for i in range(1000):
             move = randint(0, 3)
             if move == 0:
-                if y > 0 and self.is_visited(x, y - 1):
+                if y > 0:
+                    if not self.is_forty_two(x, y - 1) and self.is_visited(x, y - 1):
+                        self.break_north(x, y)
+                        self.break_south(x, y - 1)
+                        return
+            elif move == 1:
+                if x < self.config['WIDTH'] - 1:
+                    if (not self.is_forty_two(x + 1, y) and self.is_visited(x + 1, y)
+                        and not self.is_forty_two(x + 1, y)):
+                        self.break_east(x, y)
+                        self.break_west(x + 1, y)
+                        return
+            elif move == 2:
+                if y < self.config['HEIGHT'] - 1:
+                    if (not self.is_forty_two(x, y + 1) and self.is_visited(x, y + 1)
+                        and not self.is_forty_two(x, y + 1)):
+                        self.break_south(x, y)
+                        self.break_north(x, y + 1)
+                        return
+            elif move == 3:
+                if x > 0:
+                    if (not self.is_forty_two(x - 1, y) and self.is_visited(x - 1, y)
+                        and not self.is_forty_two(x - 1, y)):
+                        self.break_west(x, y)
+                        self.break_east(x - 1, y)
+                        return
+
+
+    def connect_cases(self, x: int, y: int, dir: int) -> None:
+        if dir == 0:
+            if y > 0:
+                if self.maze[y - 1][x] != 'F':
                     self.break_north(x, y)
                     self.break_south(x, y - 1)
-                    return
-            elif move == 1:
-                if x < self.config['WIDTH'] - 1 and self.is_visited(x + 1, y):
+        if dir == 1:
+            if x < self.config['WIDTH'] - 1:
+                if self.maze[y][x + 1] != 'F':
                     self.break_east(x, y)
                     self.break_west(x + 1, y)
-                    return
-            elif move == 2:
-                if y < self.config['HEIGHT'] - 1 and self.is_visited(x, y + 1):
+        if dir == 2:
+            if y < self.config['HEIGHT'] - 1:
+                if self.maze[y + 1][x] != 'F':
                     self.break_south(x, y)
                     self.break_north(x, y + 1)
-                    return
-            elif move == 3:
-                if x > 0 and self.is_visited(x - 1, y):
+        if dir == 3:
+            if x > 0:
+                if self.maze[y][x - 1] != 'F':
                     self.break_west(x, y)
                     self.break_east(x - 1, y)
-                    return
-            print(f"\nx: {x}, y: {y}")
-            for m in self.maze:
-                print(m)
 
 
     def complete_maze(self, perfect: bool) -> None:
         for y in range(0, len(self.maze)):
             for x in range(0, len(self.maze[y])):
                 if not self.is_visited(x, y):
-                    self.open_path(x, y)
+                    self.open_path_perfect(x, y)
+    
+
+    def forty_two_possible(self) -> bool:
+        if self.config['WIDTH'] > 9 and self.config['HEIGHT'] > 7:
+            return True
+        return False
+    
+
+    def get_forty_two(self) -> tuple:
+        return int((self.config['WIDTH'] / 2) - 3), int((self.config['HEIGHT'] / 2) - 2)
+
+
+    def create_forty_two(self, left_top_42: tuple) -> None:
+        x, y = left_top_42
+        base_x = x
+        forty_two = [
+            ['G', 'F', 'F', 'F', 'G', 'G', 'G'],
+            ['G', 'F', 'F', 'F', '5', '7', 'G'],
+            ['G', 'G', 'G', 'F', 'G', 'G', 'G'],
+            ['F', 'F', 'G', 'F', 'G', 'D', '5'],
+            ['F', 'F', 'G', 'F', 'G', 'G', 'G']
+        ]
+        for l in forty_two:
+            for c in l:
+                self.maze[y][x] = c
+                x += 1
+            y += 1
+            x = base_x
+    
+
+    def draw_forty_two(self) -> None:
+        for y in range(len(self.maze)):
+            for x in range(len(self.maze[y])):
+                if (self.maze[y - 1][x] == 'G'
+                    and self.maze[y + 1][x] == 'G'
+                    and self.maze[y][x - 1] != 'G'
+                    and self.maze[y][x + 1] != 'G'
+                    and self.maze[y][x + 2] != 'G'
+                    and self.maze[y][x] != 'G'):
+                    self.break_east(x - 1, y)
+                if (self.maze[y - 1][x] == 'G'
+                    and self.maze[y + 1][x] == 'G'
+                    and self.maze[y][x - 1] != 'G'
+                    and self.maze[y][x + 1] != 'G'
+                    and self.maze[y][x - 2] != 'G'
+                    and self.maze[y][x] != 'G'):
+                    self.break_west(x + 1, y)
+        for y in range(len(self.maze)):
+            for x in range(len(self.maze[y])):
+                if self.maze[y][x] == 'G':
+                    self.maze[y][x] = 'F'
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
     '''
     ez
     '''
-    try:
-        maze = Maze(configs)
-        maze.create_path()
+    maze = Maze(configs)
+    if maze.forty_two_possible():
+        maze.create_forty_two(maze.get_forty_two())
+    maze.create_path()
+    if configs['PERFECT'] == True:
         maze.complete_maze(1)
-    except KeyboardInterrupt as e:
-        print(e)
-    finally:
-        with open(maze_file, 'w') as maze_open:
-            for l in maze.get_maze():
-                for c in l:
-                    maze_open.write(c)
-                maze_open.write('\n')
+    if configs['PERFECT'] == False:
+        maze.complete_maze(0)
+    maze.draw_forty_two()
+    with open(maze_file, 'w') as maze_open:
+        for l in maze.get_maze():
+            for c in l:
+                maze_open.write(c)
+            maze_open.write('\n')
