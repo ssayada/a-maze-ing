@@ -7,6 +7,7 @@ from symbol import Symbol
 from beautify import beautify_junctions
 from cinematique_launch import title_screen
 import time
+from ui.game import game_screen
 
 
 symb_type = "C"
@@ -105,11 +106,13 @@ def launcher() -> None:
         stdscr.refresh()
         time.sleep(0.3)
 
+        game_screen(
+            stdscr,
+            render_fn=afficher_labyrinthe_murs,
+            on_regenerate=None,   # on ajoutera ça quand on fera le menu/options + regeneration
+            title="A-MAZE-ING",
+        )
     curses.wrapper(_run)
-    maze_lines, moves = afficher_labyrinthe_murs()
-    for line in maze_lines:
-        print(line)
-    print(moves)
 
 
 if __name__ == "__main__":
