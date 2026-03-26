@@ -7,7 +7,7 @@ def option_screen(stdscr, settings: dict) -> dict:
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
-    fields = ["WIDTH", "HEIGHT", "SYMBOL_THEME", "BEAUTIFY", "Back"]
+    fields = ["WIDTH", "HEIGHT", "SYMBOL_THEME", "BEAUTIFY", "PATH_COLOR", "Back"]
     idx = 0
 
     while True:
@@ -31,6 +31,8 @@ def option_screen(stdscr, settings: dict) -> dict:
                 line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}  (A/B/C)"
             elif f == "BEAUTIFY":
                 line = f"BEAUTIFY: {'ON' if settings['BEAUTIFY'] else 'OFF'}"
+            elif f == "PATH_COLOR":
+                line = f"PATH_COLOR: {settings['PATH_COLOR']}"
             else:
                 line = f
             stdscr.addstr(start_y + i, max(0, (w - len(line)) // 2), line, attr)
@@ -48,9 +50,10 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["HEIGHT"] = 20
             settings["SYMBOL_THEME"] = "A"
             settings["BEAUTIFY"] = True
+            settings["PATH_COLOR"] = "Rouge"
         elif key in (curses.KEY_LEFT, curses.KEY_RIGHT, ord('a'), ord('d')): # switch de valeurs
             f = fields[idx]
-            delta = -1 if key == (curses.KEY_LEFT or ord('a')) else 1
+            delta = -1 if key in (curses.KEY_LEFT, ord('a')) else 1
 
             if f == "WIDTH":
                 settings["WIDTH"] = _clamp_int(settings["WIDTH"] + 2 * delta, 9, 199)
@@ -66,6 +69,10 @@ def option_screen(stdscr, settings: dict) -> dict:
                 settings["SYMBOL_THEME"] = themes[(cur + delta) % len(themes)]
             elif f == "BEAUTIFY":
                 settings["BEAUTIFY"] = not settings["BEAUTIFY"]
+            elif f == "PATH_COLOR":
+                colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
+                cur = colors.index(settings["PATH_COLOR"]) if settings["PATH_COLOR"] in colors else 0
+                settings["PATH_COLOR"] = colors[(cur + delta) % len(colors)]
 
         elif key in (curses.KEY_ENTER, 10, 13):
             if fields[idx] == "Back":

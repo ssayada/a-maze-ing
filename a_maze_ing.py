@@ -2,16 +2,15 @@
 import curses
 from maze_gen.ourtypes import Dir
 from maze_gen.generator import parse_config_file
-from solver import a_star, path_to_moves, draw_path_on_out
-from symbol import Symbol
-from beautify import beautify_junctions
-from cinematique_launch import title_screen
-import time
+from solver import a_star, path_to_moves
+from ui.symbol import Symbol
+from ui.beautify import beautify_junctions
+from ui.cinematique_launch import title_screen
 from ui.game import game_screen
+from ui.menu import menu_screen
+from ui.option import option_screen
 
 
-symb_type = "C"
-symbol = Symbol(symb_type, 1)
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     grid: list[list[int]] = []
@@ -35,25 +34,25 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     return grid
 
 
-def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
+def afficher_labyrinthe_murs(
+    fichier: str = "maze.txt",
+    symb_type: str = "C",
+    beautify: bool = False,
+) -> tuple[list[str], str, list[tuple[int,int]]]:
     conf_file = parse_config_file("config.txt")
     if fichier is None:
         fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
 
-    # ENTRY / EXIT attendus en coordonnées "cellules" : x,y sur grid
+    symbol = Symbol(symb_type, 1)
+
     ex, ey = map(int, conf_file.get("ENTRY"))
     sx, sy = map(int, conf_file.get("EXIT"))
 
-    try:
-        grid = lire_maze_bits(fichier)
-    except ValueError as e:
-        print(e)
-        return
+    grid = lire_maze_bits(fichier)
 
-    height = len(grid)        # nb de lignes (Y)
-    width = len(grid[0])      # nb de colonnes (X)
+    height = len(grid)
+    width = len(grid[0])
 
-    # Validation des bornes
     if not (0 <= ex < width and 0 <= ey < height):
         raise ValueError(f"ENTRY hors labyrinthe: ({ex},{ey}) pour width={width}, height={height}")
     if not (0 <= sx < width and 0 <= sy < height):
@@ -61,12 +60,10 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
 
     out = [[" " for _ in range(2 * width + 1)] for _ in range(2 * height + 1)]
 
-    # intersections
     for yy in range(0, 2 * height + 1, 2):
         for xx in range(0, 2 * width + 1, 2):
             out[yy][xx] = symbol.DOT
 
-    # murs
     for y in range(height):
         for x in range(width):
             cell = grid[y][x]
@@ -77,7 +74,6 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
             out[2 * y + 1][2 * x]     = symbol.V_WALL if (cell & Dir.W) else symbol.FILL
             out[2 * y + 1][2 * x + 2] = symbol.V_WALL if (cell & Dir.E) else symbol.FILL
 
-    # Placement direct sur l'affichage (centre de cellule)
     entry_r, entry_c = 2 * ey + 1, 2 * ex + 1
     exit_r, exit_c = 2 * sy + 1, 2 * sx + 1
     out[entry_r][entry_c] = symbol.ENTRY
@@ -88,30 +84,69 @@ def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
     path = a_star(grid, start, goal)
     if path is None:
         raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
-    moves = path_to_moves(path)
-    draw_path_on_out(out, path, symbol.PATH)
 
-    if symbol.round == 2:
+    moves = path_to_moves(path)
+    """draw_path_on_out(out, path, symbol.PATH)"""
+
+    if beautify:
         beautify_junctions(out, symb_type)
-    return (["".join(row) for row in out], moves)
+
+    maze_lines = ["".join(row) for row in out]
+    return (maze_lines, moves, path)
 
 
 def launcher() -> None:
     def _run(stdscr):
         title_screen(stdscr, duration=3.0, fps=30)
 
-        # Ensuite tu peux afficher ton labyrinthe / menu / jeu
-        stdscr.erase()
-        stdscr.addstr(0, 0, "Loading maze...")
-        stdscr.refresh()
-        time.sleep(0.3)
+        # init settings depuis config.txt
+        conf = parse_config_file("config.txt")
+        settings = {
+            "WIDTH": int(conf["WIDTH"]),
+            "HEIGHT": int(conf["HEIGHT"]),
+            "SYMBOL_THEME": "A",
+            "BEAUTIFY": False,
+            "PATH_COLOR": "Rouge",
+        }
 
-        game_screen(
-            stdscr,
-            render_fn=afficher_labyrinthe_murs,
-            on_regenerate=None,   # on ajoutera ça quand on fera le menu/options + regeneration
-            title="A-MAZE-ING",
-        )
+        """def regenerate() -> None:
+            # 1) écrit config.txt
+            write_config_file(settings, "config.txt")
+            # 2) relit + valide
+            conf2 = parse_config_file("config.txt")
+            # 3) génère maze.txt
+            maze_gen(conf2, conf2["OUTPUT_FILE"])
+
+        regenerate()"""
+
+        while True:
+            action = menu_screen(stdscr, title="A-MAZE-ING")
+            if action == "quit":
+                return
+
+            if action == "options":
+                option_screen(stdscr, settings)
+                """regenerate()"""
+                continue
+
+            if action == "start":
+                def render():
+                    return afficher_labyrinthe_murs(
+                        fichier="maze.txt",
+                        symb_type=settings["SYMBOL_THEME"],
+                        beautify=settings["BEAUTIFY"],
+                    )
+
+                game_screen(
+                    stdscr,
+                    render_fn=render,
+                    on_regenerate=None,  # touche R dans game_screen
+                    path_color_name=settings["PATH_COLOR"],
+                    title="A-MAZE-ING",
+                )
+                # retour game_screen -> menu
+                continue
+
     curses.wrapper(_run)
 
 
