@@ -10,7 +10,7 @@ import time
 
 
 symb_type = "C"
-symbol = Symbol(symb_type, 2)
+symbol = Symbol(symb_type, 1)
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     grid: list[list[int]] = []
@@ -35,13 +35,13 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
 
 
 def afficher_labyrinthe_murs(fichier="maze.txt") -> list[str]:
-    conf_file = parse_config_file()
+    conf_file = parse_config_file("config.txt")
     if fichier is None:
         fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
 
     # ENTRY / EXIT attendus en coordonnées "cellules" : x,y sur grid
-    ex, ey = map(int, conf_file.get("ENTRY").split(","))
-    sx, sy = map(int, conf_file.get("EXIT").split(","))
+    ex, ey = map(int, conf_file.get("ENTRY"))
+    sx, sy = map(int, conf_file.get("EXIT"))
 
     try:
         grid = lire_maze_bits(fichier)
