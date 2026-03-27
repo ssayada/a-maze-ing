@@ -33,10 +33,10 @@ class Maze:
     def get_hexa(self) -> list:
         return self.hexa
 
-    def get_entry(self) -> bool:
+    def get_entry(self) -> dict:
         return self.config['ENTRY']
 
-    def get_exit(self) -> bool:
+    def get_exit(self) -> dict:
         return self.config['EXIT']
 
     def get_width(self) -> int:
