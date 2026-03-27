@@ -128,7 +128,7 @@ def launcher() -> None:
             "WIDTH": int(conf["WIDTH"]),
             "HEIGHT": int(conf["HEIGHT"]),
             "SYMBOL_THEME": "A",
-            "BEAUTIFY": False,
+            "BEAUTIFY": True,
             "PATH_COLOR": "Rouge",
             "ENTRY_COLOR": "Rouge",
             "EXIT_COLOR": "Vert",

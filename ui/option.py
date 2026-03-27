@@ -44,7 +44,7 @@ def option_screen(stdscr, settings: dict) -> dict:
     stdscr.nodelay(False)
     stdscr.keypad(True)
 
-    # NOTE: settings contient déjà ENTRY et EXIT sous forme tuple (x,y)
+
     fields = [
         "WIDTH", "HEIGHT",
         "ENTRY_X", "ENTRY_Y",
@@ -127,7 +127,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["ENTRY"] = (0, 0)
             settings["EXIT"] = (19, 14)
             settings["SYMBOL_THEME"] = "A"
-            settings["BEAUTIFY"] = False
+            settings["BEAUTIFY"] = True
             settings["PATH_COLOR"] = "Rouge"
             _normalize_entry_exit(settings)
 
