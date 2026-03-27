@@ -28,7 +28,6 @@ def _normalize_entry_exit(settings: dict) -> None:
 
 
 def _wrap_int(value: int, lo: int, hi: int) -> int:
-    """Wrap inclusif: si >hi => lo, si <lo => hi"""
     if value > hi:
         return lo
     if value < lo:
@@ -49,7 +48,7 @@ def option_screen(stdscr, settings: dict) -> dict:
         "WIDTH", "HEIGHT",
         "ENTRY_X", "ENTRY_Y",
         "EXIT_X", "EXIT_Y",
-        "PERFECT",
+        "PERFECT", "COLOR_42",
         "SYMBOL_THEME", "BEAUTIFY", "PATH_COLOR",
         "Back",
     ]
@@ -61,7 +60,7 @@ def option_screen(stdscr, settings: dict) -> dict:
         h, w = stdscr.getmaxyx()
         MIN_W = 9
         MIN_H = 9
-        header = "A-MAZE-ING — Q: Menu  R: Regenerate  S: Refresh"
+        header = "A-MAZE-ING — Q: Menu  R: Regenerate"
         max_height = (h - 5) // 2
         max_width_from_term = (w - 1) // 2
         max_width_from_header = (w - max(len(header), 20) - 1) // 2
@@ -104,6 +103,8 @@ def option_screen(stdscr, settings: dict) -> dict:
                 line = f"EXIT_Y: {sy}"
             elif f == "PERFECT":
                 line = f"PERFECT: {'ON' if settings.get('PERFECT', True) else 'OFF'}"
+            elif f == "COLOR_42":
+                line = f"COLOR_42: {'ON' if settings.get('COLOR_42', False) else 'OFF'}"
             elif f == "SYMBOL_THEME":
                 line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
@@ -132,6 +133,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["SYMBOL_THEME"] = "A"
             settings["BEAUTIFY"] = True
             settings["PERFECT"] = False
+            settings["COLOR_42"] = False
             settings["PATH_COLOR"] = "Rouge"
             _normalize_entry_exit(settings)
 
@@ -161,7 +163,9 @@ def option_screen(stdscr, settings: dict) -> dict:
             elif f == "EXIT_Y":
                 settings["EXIT"] = (sx, sy + delta)
             elif f == "PERFECT":
-                settings["PERFECT"] = not settings["PERFECT"]
+                settings["PERFECT"] = not settings.get("PERFECT", False)
+            elif f == "COLOR_42":
+                settings["COLOR_42"] = not settings.get("COLOR_42", False)
             elif f == "SYMBOL_THEME":
                 themes = ["A", "B", "C"]
                 cur = themes.index(settings["SYMBOL_THEME"])

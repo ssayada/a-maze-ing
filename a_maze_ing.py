@@ -62,7 +62,8 @@ def afficher_labyrinthe_murs(
     fichier: str = "maze.txt",
     symb_type: str = "C",
     beautify: bool = False,
-) -> tuple[list[str], str, list[tuple[int,int]]]:
+    show_closed: bool = False,
+) -> tuple[list[str], str, list[tuple[int,int]], set[tuple[int,int]]]:
     conf_file = parse_config_file("config.txt")
     if fichier is None:
         fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
@@ -76,6 +77,12 @@ def afficher_labyrinthe_murs(
 
     height = len(grid)
     width = len(grid[0])
+    closed_cells: set[tuple[int, int]] = set()
+    if show_closed:
+        for y in range(height):
+            for x in range(width):
+                if grid[y][x] == 0xF:  # totalement fermée (N+E+S+W)
+                    closed_cells.add((2 * y + 1, 2 * x + 1))
 
     if not (0 <= ex < width and 0 <= ey < height):
         raise ValueError(f"ENTRY hors labyrinthe: ({ex},{ey}) pour width={width}, height={height}")
@@ -116,7 +123,7 @@ def afficher_labyrinthe_murs(
         beautify_junctions(out, symb_type)
 
     maze_lines = ["".join(row) for row in out]
-    return (maze_lines, moves, path)
+    return (maze_lines, moves, path, closed_cells)
 
 
 def launcher() -> None:
@@ -182,6 +189,7 @@ def launcher() -> None:
                         fichier=settings["OUTPUT_FILE"],
                         symb_type=settings["SYMBOL_THEME"],
                         beautify=settings["BEAUTIFY"],
+                        show_closed=settings.get("COLOR_42", False),
                     )
 
                 game_screen(

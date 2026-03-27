@@ -4,7 +4,7 @@ from typing import Optional
 from ui.colors import Colors
 
 # render_fn returns: (maze_lines, moves, path)
-RenderFn = Callable[[], tuple[list[str], str, list[tuple[int, int]]]]
+RenderFn = Callable[[], tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]]
 RegenerateFn = Callable[[], None]
 
 
@@ -70,6 +70,9 @@ def game_screen(
         curses.init_pair(1, path_c, path_c)
         PATH_ATTR = curses.color_pair(1)
 
+        curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_MAGENTA)
+        CLOSED_ATTR = curses.color_pair(4)
+
         # Entry/Exit: texte coloré sur fond terminal
         curses.init_pair(2, entry_c, -1)
         ENTRY_ATTR = curses.color_pair(2) | curses.A_BOLD
@@ -80,9 +83,11 @@ def game_screen(
         PATH_ATTR = curses.A_REVERSE
         ENTRY_ATTR = curses.A_BOLD
         EXIT_ATTR = curses.A_BOLD
+        CLOSED_ATTR = curses.A_DIM
 
+    show_path = True
     while True:
-        maze_lines, moves, path = render_fn()
+        maze_lines, moves, path, closed_cells = render_fn()
 
         # transforme path (cell coords) => positions dans le rendu "out"
         path_pos = _path_to_out_positions(path)
@@ -97,7 +102,7 @@ def game_screen(
         stdscr.erase()
         h, w = stdscr.getmaxyx()
 
-        header = f"{title} - M: Menu - R: Regenerate"
+        header = f"{title} - M: Menu - R: Regenerate - P: Path {'ON' if show_path else 'OFF'}"
         x0 = max(0, (w - len(header)) // 2)
         try:
             stdscr.addstr(0, x0, header, curses.A_BOLD)
@@ -135,11 +140,13 @@ def game_screen(
                         break
                     # Priorité: ENTRY -> EXIT -> PATH -> normal
                     if start_pos is not None and (r, c) == start_pos:
-                        _safe_addch(stdscr, y, x, ch, ENTRY_ATTR)  # ch devrait être '#'
+                        _safe_addch(stdscr, y, x, ch, ENTRY_ATTR)
                     elif goal_pos is not None and (r, c) == goal_pos:
-                        _safe_addch(stdscr, y, x, ch, EXIT_ATTR)   # ch devrait être '$'
-                    elif (r, c) in path_pos:
+                        _safe_addch(stdscr, y, x, ch, EXIT_ATTR)
+                    elif show_path and (r, c) in path_pos:
                         _safe_addch(stdscr, y, x, " ", PATH_ATTR)
+                    elif (r, c) in closed_cells:
+                        _safe_addch(stdscr, y, x, " ", CLOSED_ATTR)
                     else:
                         _safe_addch(stdscr, y, x, ch)
 
@@ -152,6 +159,9 @@ def game_screen(
             stdscr.refresh()
 
         key = stdscr.getch()
+        if key in (ord("p"), ord("P")):
+            show_path = not show_path
+            continue
         if key in (ord("m"), ord("M"), 27):
             return "back"
         if key in (ord("r"), ord("R")) and on_regenerate is not None:
