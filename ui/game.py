@@ -97,7 +97,7 @@ def game_screen(
         stdscr.erase()
         h, w = stdscr.getmaxyx()
 
-        header = f"{title} — Q: Menu  R: Regenerate  S: Refresh"
+        header = f"{title} - M: Menu - R: Regenerate"
         x0 = max(0, (w - len(header)) // 2)
         try:
             stdscr.addstr(0, x0, header, curses.A_BOLD)
@@ -152,9 +152,7 @@ def game_screen(
             stdscr.refresh()
 
         key = stdscr.getch()
-        if key in (ord("q"), ord("Q"), 27):
+        if key in (ord("m"), ord("M"), 27):
             return "back"
         if key in (ord("r"), ord("R")) and on_regenerate is not None:
             on_regenerate()
-        if key in (ord("s"), ord("S"), curses.KEY_RESIZE):
-            continue

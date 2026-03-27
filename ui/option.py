@@ -3,6 +3,42 @@ import curses
 def _clamp_int(value: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, value))
 
+
+def _normalize_entry_exit(settings: dict) -> None:
+    w = settings["WIDTH"]
+    h = settings["HEIGHT"]
+
+    def clamp(p: tuple[int, int]) -> tuple[int, int]:
+        x, y = p
+        x = max(0, min(w - 1, x))
+        y = max(0, min(h - 1, y))
+        return (x, y)
+
+    settings["ENTRY"] = clamp(settings["ENTRY"])
+    settings["EXIT"] = clamp(settings["EXIT"])
+
+    # évite ENTRY == EXIT (décale EXIT)
+    if settings["ENTRY"] == settings["EXIT"]:
+        ex, ey = settings["ENTRY"]
+        candidates = [(ex + 1, ey), (ex, ey + 1), (ex - 1, ey), (ex, ey - 1)]
+        for cx, cy in candidates:
+            if 0 <= cx < w and 0 <= cy < h:
+                settings["EXIT"] = (cx, cy)
+                break
+
+
+def _wrap_int(value: int, lo: int, hi: int) -> int:
+    """Wrap inclusif: si >hi => lo, si <lo => hi"""
+    if value > hi:
+        return lo
+    if value < lo:
+        return hi
+    return value
+
+def _make_odd(n: int) -> int:
+    return n if (n % 2 == 1) else (n + 1)
+
+
 def option_screen(stdscr, settings: dict) -> dict:
     curses.curs_set(0)
     stdscr.nodelay(False)
@@ -20,7 +56,24 @@ def option_screen(stdscr, settings: dict) -> dict:
 
     while True:
         stdscr.erase()
+        _normalize_entry_exit(settings)
         h, w = stdscr.getmaxyx()
+        MIN_W = 9
+        MIN_H = 9
+        header = "A-MAZE-ING — Q: Menu  R: Regenerate  S: Refresh"
+        max_height = (h - 5) // 2
+        max_width_from_term = (w - 1) // 2
+        max_width_from_header = (w - max(len(header), 20) - 1) // 2
+        max_width = min(max_width_from_term, max_width_from_header)
+        if max_width < MIN_W:
+            max_width = MIN_W
+        if max_height < MIN_H:
+            max_height = MIN_H
+        if max_width % 2 == 0:
+            max_width -= 1
+        if max_height % 2 == 0:
+            max_height -= 1
+    
         title = "Options"
         stdscr.addstr(2, max(0, (w - len(title)) // 2), title, curses.A_BOLD)
         help_txt = "↑/↓: choisir — ←/→: modifier — Entrée: back — R: reset"
@@ -54,8 +107,6 @@ def option_screen(stdscr, settings: dict) -> dict:
                 line = f"BEAUTIFY: {'ON' if settings['BEAUTIFY'] else 'OFF'}"
             elif f == "PATH_COLOR":
                 line = f"PATH_COLOR: {settings['PATH_COLOR']}"
-            else:
-                line = f
 
             stdscr.addstr(start_y + i, max(0, (w - len(line)) // 2), line, attr)
 
@@ -76,8 +127,9 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["ENTRY"] = (0, 0)
             settings["EXIT"] = (19, 14)
             settings["SYMBOL_THEME"] = "A"
-            settings["BEAUTIFY"] = True
+            settings["BEAUTIFY"] = False
             settings["PATH_COLOR"] = "Rouge"
+            _normalize_entry_exit(settings)
 
         elif key in (curses.KEY_LEFT, curses.KEY_RIGHT, ord('a'), ord('d')):
             f = fields[idx]
@@ -87,14 +139,15 @@ def option_screen(stdscr, settings: dict) -> dict:
             sx, sy = settings["EXIT"]
 
             if f == "WIDTH":
-                settings["WIDTH"] = _clamp_int(settings["WIDTH"] + 2 * delta, 9, 199)
-                if settings["WIDTH"] % 2 == 0:
-                    settings["WIDTH"] += 1
+                new_w = settings["WIDTH"] + 2 * delta
+                new_w = _wrap_int(new_w, MIN_W, max_width)
+                new_w = _make_odd(new_w)
+                settings["WIDTH"] = new_w
             elif f == "HEIGHT":
-                settings["HEIGHT"] = _clamp_int(settings["HEIGHT"] + 2 * delta, 9, 199)
-                if settings["HEIGHT"] % 2 == 0:
-                    settings["HEIGHT"] += 1
-
+                new_h = settings["HEIGHT"] + 2 * delta
+                new_h = _wrap_int(new_h, MIN_H, max_height)
+                new_h = _make_odd(new_h)
+                settings["HEIGHT"] = new_h
             elif f == "ENTRY_X":
                 settings["ENTRY"] = (ex + delta, ey)
             elif f == "ENTRY_Y":
@@ -103,7 +156,6 @@ def option_screen(stdscr, settings: dict) -> dict:
                 settings["EXIT"] = (sx + delta, sy)
             elif f == "EXIT_Y":
                 settings["EXIT"] = (sx, sy + delta)
-
             elif f == "SYMBOL_THEME":
                 themes = ["A", "B", "C"]
                 cur = themes.index(settings["SYMBOL_THEME"])
@@ -114,6 +166,7 @@ def option_screen(stdscr, settings: dict) -> dict:
                 colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
                 cur = colors.index(settings["PATH_COLOR"]) if settings["PATH_COLOR"] in colors else 0
                 settings["PATH_COLOR"] = colors[(cur + delta) % len(colors)]
+            _normalize_entry_exit(settings)
 
         elif key in (curses.KEY_ENTER, 10, 13):
             if fields[idx] == "Back":
