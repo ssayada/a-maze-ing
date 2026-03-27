@@ -123,7 +123,7 @@ def launcher() -> None:
     def _run(stdscr):
         title_screen(stdscr, duration=3.0, fps=30)
 
-        conf = parse_config_file("config.txt")
+        conf = parse_config_file("init_config.txt")
         settings = {
             "WIDTH": int(conf["WIDTH"]),
             "HEIGHT": int(conf["HEIGHT"]),
