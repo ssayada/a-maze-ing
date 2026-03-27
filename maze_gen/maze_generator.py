@@ -477,9 +477,9 @@ def maze_gen(configs: dict, maze_file: str) -> None:
         maze.create_forty_two(maze.get_forty_two())
     maze.create_path()
     if configs['PERFECT']:
-        maze.complete_maze(1)
+        maze.complete_maze(True)
     if not configs['PERFECT']:
-        maze.complete_maze(0)
+        maze.complete_maze(False)
     maze.draw_forty_two()
     with open(maze_file, 'w') as maze_open:
         for ll in maze.get_maze():

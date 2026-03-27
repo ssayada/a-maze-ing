@@ -37,7 +37,11 @@ def _parse_bool(s: str) -> bool:
 
 # Parse the config.txt file
 def parse_config_file(config_file: str) -> dict:
-    configs = {}
+    configs = {
+                "WIDTH": 0, "HEIGHT": 0,
+                "ENTRY":(), "EXIT": (),
+                "OUTPUT_FILE":"maze.txt",
+                "PERFECT": True}
     try:
         with open(config_file, encoding="utf-8") as f:
             for line in f:
@@ -45,15 +49,14 @@ def parse_config_file(config_file: str) -> dict:
                 if line and "=" in line:
                     key, value = line.split("=", 1)
                     configs[key.strip()] = value.strip()
+                    if key in ("WIDTH", "HEIGHT"):
+                        configs[key] = int(value)
+                    elif key in ("ENTRY", "EXIT"):
+                        x, y = value.split(',')
+                        configs[key] = (int(x), int(y))
+                    elif key == "PERFECT":
+                        configs[key] = _parse_bool(value)
 
-        for k in list(configs.keys()):
-            if k in ("WIDTH", "HEIGHT"):
-                configs[k] = int(configs[k])
-            elif k in ("ENTRY", "EXIT"):
-                x, y = configs[k].split(",")
-                configs[k] = (int(x), int(y))
-            elif k == "PERFECT":
-                configs[k] = _parse_bool(configs[k])
     except Exception as e:
         print(f"Invalid '{config_file}' file: {e}")
         return {}
