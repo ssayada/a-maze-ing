@@ -48,8 +48,8 @@ def option_screen(stdscr, settings: dict) -> dict:
         "WIDTH", "HEIGHT",
         "ENTRY_X", "ENTRY_Y",
         "EXIT_X", "EXIT_Y",
-        "PERFECT", "COLOR_42",
-        "SYMBOL_THEME", "BEAUTIFY", "PATH_COLOR",
+        "PERFECT", "COLOR_42", "WALL_COLOR",
+        "PATH_COLOR", "SYMBOL_THEME", "BEAUTIFY",
         "Back",
     ]
     idx = 0
@@ -105,6 +105,8 @@ def option_screen(stdscr, settings: dict) -> dict:
                 line = f"PERFECT: {'ON' if settings.get('PERFECT', True) else 'OFF'}"
             elif f == "COLOR_42":
                 line = f"COLOR_42: {'ON' if settings.get('COLOR_42', False) else 'OFF'}"
+            elif f == "WALL_COLOR":
+                line = f"WALL_COLOR: {settings.get('WALL_COLOR', 'Blanc')}"
             elif f == "SYMBOL_THEME":
                 line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
@@ -134,6 +136,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["BEAUTIFY"] = True
             settings["PERFECT"] = False
             settings["COLOR_42"] = False
+            settings["WALL_COLOR"] = "Blanc"
             settings["PATH_COLOR"] = "Rouge"
             _normalize_entry_exit(settings)
 
@@ -176,6 +179,10 @@ def option_screen(stdscr, settings: dict) -> dict:
                 colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
                 cur = colors.index(settings["PATH_COLOR"]) if settings["PATH_COLOR"] in colors else 0
                 settings["PATH_COLOR"] = colors[(cur + delta) % len(colors)]
+            elif f == "WALL_COLOR":
+                colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
+                cur = colors.index(settings["WALL_COLOR"]) if settings.get("WALL_COLOR") in colors else 0
+                settings["WALL_COLOR"] = colors[(cur + delta) % len(colors)]
             _normalize_entry_exit(settings)
 
         elif key in (curses.KEY_ENTER, 10, 13):

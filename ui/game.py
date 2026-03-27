@@ -48,6 +48,7 @@ def game_screen(
     path_color_name: str = "Rouge",
     entry_color_name: str = "Vert",
     exit_color_name: str = "Jaune",
+    wall_color_name: str = "Blanc",
     title: str = "A-MAZE-ING",
 ) -> str:
     curses.curs_set(0)
@@ -65,6 +66,9 @@ def game_screen(
         path_c = Colors.to_curses(path_color_name)
         entry_c = Colors.to_curses(entry_color_name)
         exit_c = Colors.to_curses(exit_color_name)
+        wall_c = Colors.to_curses(wall_color_name)
+        curses.init_pair(5, wall_c, -1)
+        WALL_ATTR = curses.color_pair(5) | curses.A_BOLD
 
         # Chemin: bloc (fond coloré)
         curses.init_pair(1, path_c, path_c)
@@ -84,8 +88,14 @@ def game_screen(
         ENTRY_ATTR = curses.A_BOLD
         EXIT_ATTR = curses.A_BOLD
         CLOSED_ATTR = curses.A_DIM
+        WALL_ATTR = curses.A_BOLD
 
     show_path = True
+    WALL_CHARS = {
+        "━", "┃", "╋", "┏", "┓", "┗", "┛", "┣", "┫", "┳", "┻",
+        "─", "│", "┼", "╭", "╮", "╰", "╯", "├", "┤", "┬", "┴",
+        "═", "║", "╬", "╔", "╗", "╚", "╝", "╠", "╣", "╦", "╩",
+        }
     while True:
         maze_lines, moves, path, closed_cells = render_fn()
 
@@ -148,7 +158,10 @@ def game_screen(
                     elif (r, c) in closed_cells:
                         _safe_addch(stdscr, y, x, " ", CLOSED_ATTR)
                     else:
-                        _safe_addch(stdscr, y, x, ch)
+                        if ch in WALL_CHARS:
+                            _safe_addch(stdscr, y, x, ch, WALL_ATTR)
+                        else:
+                            _safe_addch(stdscr, y, x, ch)
 
             footer = f"Moves: {moves}"
             try:

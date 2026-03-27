@@ -117,7 +117,6 @@ def afficher_labyrinthe_murs(
         raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
 
     moves = path_to_moves(path)
-    """draw_path_on_out(out, path, symbol.PATH)"""
 
     if beautify:
         beautify_junctions(out, symb_type)
@@ -139,8 +138,7 @@ def launcher() -> None:
             "PATH_COLOR": "Rouge",
             "ENTRY_COLOR": "Rouge",
             "EXIT_COLOR": "Vert",
-
-            # champs nécessaires à la génération
+            "WALL_COLOR": "Blanc",
             "ENTRY": conf["ENTRY"],
             "EXIT": conf["EXIT"],
             "OUTPUT_FILE": conf.get("OUTPUT_FILE", "maze.txt"),
@@ -199,6 +197,7 @@ def launcher() -> None:
                     path_color_name=settings["PATH_COLOR"],
                     entry_color_name=settings["ENTRY_COLOR"],
                     exit_color_name=settings["EXIT_COLOR"],
+                    wall_color_name=settings["WALL_COLOR"],
                     title="A-MAZE-ING",
                 )
                 continue
