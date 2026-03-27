@@ -49,6 +49,7 @@ def option_screen(stdscr, settings: dict) -> dict:
         "WIDTH", "HEIGHT",
         "ENTRY_X", "ENTRY_Y",
         "EXIT_X", "EXIT_Y",
+        "PERFECT",
         "SYMBOL_THEME", "BEAUTIFY", "PATH_COLOR",
         "Back",
     ]
@@ -101,6 +102,8 @@ def option_screen(stdscr, settings: dict) -> dict:
                 line = f"EXIT_X: {sx}"
             elif f == "EXIT_Y":
                 line = f"EXIT_Y: {sy}"
+            elif f == "PERFECT":
+                line = f"PERFECT: {'ON' if settings.get('PERFECT', True) else 'OFF'}"
             elif f == "SYMBOL_THEME":
                 line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
@@ -128,6 +131,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             settings["EXIT"] = (19, 14)
             settings["SYMBOL_THEME"] = "A"
             settings["BEAUTIFY"] = True
+            settings["PERFECT"] = False
             settings["PATH_COLOR"] = "Rouge"
             _normalize_entry_exit(settings)
 
@@ -156,6 +160,8 @@ def option_screen(stdscr, settings: dict) -> dict:
                 settings["EXIT"] = (sx + delta, sy)
             elif f == "EXIT_Y":
                 settings["EXIT"] = (sx, sy + delta)
+            elif f == "PERFECT":
+                settings["PERFECT"] = not settings["PERFECT"]
             elif f == "SYMBOL_THEME":
                 themes = ["A", "B", "C"]
                 cur = themes.index(settings["SYMBOL_THEME"])
