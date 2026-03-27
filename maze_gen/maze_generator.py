@@ -223,7 +223,7 @@ class Maze:
 
 
     def open_path_perfect(self, x, y) -> None:
-        for i in range(1000):
+        while True:
             move = randint(0, 3)
             if move == 0:
                 if y > 0:
@@ -278,6 +278,14 @@ class Maze:
 
 
     def complete_maze(self, perfect: bool) -> None:
+        if self.maze[0][0] == 'F':
+            move = randint(1, 2)
+            if move == 1:
+                self.break_east(0, 0)
+                self.break_west(1, 0)
+            else:
+                self.break_south(0, 0)
+                self.break_north(0, 1)
         for y in range(0, len(self.maze)):
             for x in range(0, len(self.maze[y])):
                 if not self.is_visited(x, y):
@@ -298,11 +306,11 @@ class Maze:
         x, y = left_top_42
         base_x = x
         forty_two = [
-            ['G', 'F', 'F', 'F', 'G', 'G', 'G'],
-            ['G', 'F', 'F', 'F', '5', '7', 'G'],
-            ['G', 'G', 'G', 'F', 'G', 'G', 'G'],
-            ['F', 'F', 'G', 'F', 'G', 'D', '5'],
-            ['F', 'F', 'G', 'F', 'G', 'G', 'G']
+            ['G', 'F', 'F', 'F', 'G', 'G', 'G', 'F'],
+            ['G', 'F', 'F', 'D', '5', '7', 'G', 'F'],
+            ['G', 'G', 'G', 'F', 'G', 'G', 'G', 'F'],
+            ['F', 'F', 'G', 'F', 'G', 'D', '5', '7'],
+            ['F', 'F', 'G', 'F', 'G', 'G', 'G', 'F']
         ]
         for l in forty_two:
             for c in l:
