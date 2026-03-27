@@ -9,6 +9,7 @@ class Maze:
     maze: list
     hexa: list
     config: dict
+    backtrack: list
 
     def __init__(self, config: dict) -> None:
         self.config = config
@@ -19,6 +20,7 @@ class Maze:
                 new_row.append('F')
             self.maze.append(new_row)
         self.hexa = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
+        self.backtrack = []
 
 
     def get_maze(self) -> list:
@@ -166,27 +168,16 @@ class Maze:
 
 
     def move_back(self, x, y) -> tuple:
-        max_back = self.get_width() * self.get_height() * 20
-        it = 0
-    
         while self.adjacents_visited(x, y):
-            it += 1
-            if it > max_back:
-                raise RuntimeError(f"move_back exceeded {max_back} iterations at {(x,y)}")
-    
-            move = randint(0, 3)
-            if move == 0 and self.north_open(x, y):
-                if not self.is_forty_two(x, y - 1):
-                    y -= 1
-            if move == 1 and self.east_open(x, y):
-                if not self.is_forty_two(x + 1, y):
-                    x += 1
-            if move == 2 and self.south_open(x, y):
-                if not self.is_forty_two(x, y + 1):
-                    y += 1
-            if move == 3 and self.west_open(x, y):
-                if not self.is_forty_two(x - 1, y):
-                    x -= 1
+            direction = self.backtrack.pop()
+            if direction == 'N':
+                y += 1
+            if direction == 'E':
+                x -= 1
+            if direction == 'S':
+                y -= 1
+            if direction == 'W':
+                x += 1
         return x, y
 
 
@@ -202,21 +193,25 @@ class Maze:
                     self.break_north(x, y)
                     y -= 1
                     self.break_south(x, y)
+                    self.backtrack.append('N')
             elif (movement == 1):
                 if self.east_possible(x, y) and not self.is_forty_two(x + 1, y):
                     self.break_east(x, y)
                     x += 1
                     self.break_west(x, y)
+                    self.backtrack.append('E')
             elif (movement == 2):
                 if self.south_possible(x, y) and not self.is_forty_two(x, y + 1):
                     self.break_south(x, y)
                     y += 1
                     self.break_north(x, y)
+                    self.backtrack.append('S')
             elif (movement == 3):
                 if self.west_possible(x, y) and not self.is_forty_two(x - 1, y):
                     self.break_west(x, y)
                     x -= 1
                     self.break_east(x, y)
+                    self.backtrack.append('W')
 
 
     def is_complete(self) -> bool:
