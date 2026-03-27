@@ -1,5 +1,5 @@
 from time import sleep
-from random import randint
+from random import randint, shuffle
 
 
 class Maze:
@@ -94,6 +94,8 @@ class Maze:
 
 
     def north_open(self, x, y) -> bool:
+        if self.is_forty_two(x, y):
+            return False
         if (self.hexa.index(self.maze[y][x]) % 2 == 0
             and y > 0):
             return True
@@ -115,6 +117,8 @@ class Maze:
 
 
     def east_open(self, x, y) -> bool:
+        if self.is_forty_two(x, y):
+            return False
         if ((0 <= self.hexa.index(self.maze[y][x]) <= 1
             or 4 <= self.hexa.index(self.maze[y][x]) <= 6
             or 8 <= self.hexa.index(self.maze[y][x]) <= 9
@@ -139,6 +143,8 @@ class Maze:
 
 
     def south_open(self, x, y) -> bool:
+        if self.is_forty_two(x, y):
+            return False
         if ((0 <= self.hexa.index(self.maze[y][x]) <= 3
             or 8 <= self.hexa.index(self.maze[y][x]) <= 11)
             and y < self.config['HEIGHT'] - 1):
@@ -161,6 +167,8 @@ class Maze:
 
 
     def west_open(self, x, y) -> bool:
+        if self.is_forty_two(x, y):
+            return False
         if (0 <= self.hexa.index(self.maze[y][x]) <= 7
             and x > 0):
             return True
@@ -254,6 +262,156 @@ class Maze:
                         return
 
 
+    def open_path_imperfect(self, x: int, y: int) -> bool:
+        """Open one additional wall between two already-visited neighbours.
+    
+        Picks a random direction from (x, y) and removes the shared wall
+        with the adjacent cell, creating an extra path (making the maze
+        imperfect). The operation is skipped if it would create a 3x3 open
+        area, touch a '42' cell, or if the wall is already open.
+    
+        Args:
+            x: Column index of the source cell.
+            y: Row index of the source cell.
+    
+        Returns:
+            True if a wall was successfully opened, False otherwise.
+        """
+        if self.is_forty_two(x, y):
+            return False
+    
+        directions = [0, 1, 2, 3]
+        shuffle(directions)
+    
+        for move in directions:
+            if move == 0 and y > 0:
+                nx, ny = x, y - 1
+                if (not self.is_forty_two(nx, ny)
+                        and not self.north_open(x, y)
+                        and not self._creates_3x3(x, y, move)):
+                    self.break_north(x, y)
+                    self.break_south(nx, ny)
+                    return True
+            elif move == 1 and x < self.config['WIDTH'] - 1:
+                nx, ny = x + 1, y
+                if (not self.is_forty_two(nx, ny)
+                        and not self.east_open(x, y)
+                        and not self._creates_3x3(x, y, move)):
+                    self.break_east(x, y)
+                    self.break_west(nx, ny)
+                    return True
+            elif move == 2 and y < self.config['HEIGHT'] - 1:
+                nx, ny = x, y + 1
+                if (not self.is_forty_two(nx, ny)
+                        and not self.south_open(x, y)
+                        and not self._creates_3x3(x, y, move)):
+                    self.break_south(x, y)
+                    self.break_north(nx, ny)
+                    return True
+            elif move == 3 and x > 0:
+                nx, ny = x - 1, y
+                if (not self.is_forty_two(nx, ny)
+                        and not self.west_open(x, y)
+                        and not self._creates_3x3(x, y, move)):
+                    self.break_west(x, y)
+                    self.break_east(nx, ny)
+                    return True
+        return False
+    
+    
+    def _creates_3x3(self, x: int, y: int, direction: int) -> bool:
+        """Check if opening a wall would create a 3x3 open area.
+    
+        Verifies that removing the wall between (x, y) and its neighbour
+        in the given direction does not result in any 3x3 fully open block.
+    
+        Args:
+            x: Column index of the source cell.
+            y: Row index of the source cell.
+            direction: 0=North, 1=East, 2=South, 3=West.
+    
+        Returns:
+            True if a 3x3 open area would be created, False otherwise.
+        """
+        # Build the set of cells that would be connected after opening.
+        # A 3x3 violation exists if any 3x3 block of cells are all
+        # mutually open (no internal walls).
+        # We check all 3x3 blocks that include both (x,y) and its neighbour.
+        W = self.config['WIDTH']
+        H = self.config['HEIGHT']
+    
+        if direction == 0:
+            nx, ny = x, y - 1
+        elif direction == 1:
+            nx, ny = x + 1, y
+        elif direction == 2:
+            nx, ny = x, y + 1
+        else:
+            nx, ny = x - 1, y
+    
+        # Candidate top-left corners of 3x3 blocks containing both cells
+        min_bx = max(0, min(x, nx) - 2)
+        max_bx = min(W - 3, min(x, nx))
+        min_by = max(0, min(y, ny) - 2)
+        max_by = min(H - 3, min(y, ny))
+    
+        for by in range(min_by, max_by + 1):
+            for bx in range(min_bx, max_bx + 1):
+                if self._block_open_after(bx, by, x, y, nx, ny, direction):
+                    return True
+        return False
+    
+    
+    def _block_open_after(
+        self,
+        bx: int, by: int,
+        x: int, y: int,
+        nx: int, ny: int,
+        direction: int
+    ) -> bool:
+        """Check if a 3x3 block would be fully open after opening one wall.
+    
+        Args:
+            bx: Top-left column of the 3x3 block.
+            by: Top-left row of the 3x3 block.
+            x: Source cell column.
+            y: Source cell row.
+            nx: Neighbour cell column.
+            ny: Neighbour cell row.
+            direction: Wall direction being opened (0=N, 1=E, 2=S, 3=W).
+    
+        Returns:
+            True if all internal walls of the 3x3 block would be open.
+        """
+        # Check all horizontal and vertical internal walls in the 3x3 block
+        for cy in range(by, by + 3):
+            for cx in range(bx, bx + 3):
+                # East wall between (cx, cy) and (cx+1, cy)
+                if cx < bx + 2:
+                    east_open = self.east_open(cx, cy)
+                    # Would opening our wall make this open?
+                    if (cx == x and cy == y and direction == 1
+                            and nx == cx + 1 and ny == cy):
+                        east_open = True
+                    if (cx == nx and cy == ny and direction == 3
+                            and x == cx + 1 and y == cy):
+                        east_open = True
+                    if not east_open:
+                        return False
+                # South wall between (cx, cy) and (cx, cy+1)
+                if cy < by + 2:
+                    south_open = self.south_open(cx, cy)
+                    if (cx == x and cy == y and direction == 2
+                            and nx == cx and ny == cy + 1):
+                        south_open = True
+                    if (cx == nx and cy == ny and direction == 0
+                            and x == cx and y == cy + 1):
+                        south_open = True
+                    if not south_open:
+                        return False
+        return True
+
+
     def connect_cases(self, x: int, y: int, dir: int) -> None:
         if dir == 0:
             if y > 0:
@@ -290,7 +448,12 @@ class Maze:
             for x in range(0, len(self.maze[y])):
                 if not self.is_visited(x, y):
                     self.open_path_perfect(x, y)
-    
+        if not perfect:
+            for y in range(0, self.config['WIDTH'] * self.config['HEIGHT'] // 10):
+                    x = randint(0, self.config['WIDTH'] - 1)
+                    y = randint(0, self.config['HEIGHT'] - 1)
+                    self.open_path_imperfect(x, y)
+        
 
     def forty_two_possible(self) -> bool:
         if self.config['WIDTH'] > 9 and self.config['HEIGHT'] > 7:
