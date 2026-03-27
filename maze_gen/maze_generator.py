@@ -306,11 +306,11 @@ class Maze:
         x, y = left_top_42
         base_x = x
         forty_two = [
-            ['G', 'F', 'F', 'F', 'G', 'G', 'G', 'F'],
-            ['G', 'F', 'F', 'D', '5', 'B', 'G', 'F'],
-            ['G', 'G', 'G', 'F', 'G', 'G', 'G', 'F'],
-            ['F', 'F', 'G', 'F', 'G', 'D', '5', '7'],
-            ['F', 'F', 'G', 'F', 'G', 'G', 'G', 'F']
+            ['G', 'F', 'F', 'F', 'G', 'G', 'G'],
+            ['G', 'F', 'F', 'F', 'D', '7', 'G'],
+            ['G', 'G', 'G', 'F', 'G', 'G', 'G'],
+            ['F', 'F', 'G', 'F', 'G', 'D', '7'],
+            ['F', 'F', 'G', 'F', 'G', 'G', 'G']
         ]
         for l in forty_two:
             for c in l:
@@ -321,22 +321,6 @@ class Maze:
     
 
     def draw_forty_two(self) -> None:
-        for y in range(len(self.maze)):
-            for x in range(len(self.maze[y])):
-                if (self.maze[y - 1][x] == 'G'
-                    and self.maze[y + 1][x] == 'G'
-                    and self.maze[y][x - 1] != 'G'
-                    and self.maze[y][x + 1] != 'G'
-                    and self.maze[y][x + 2] != 'G'
-                    and self.maze[y][x] != 'G'):
-                    self.break_east(x - 1, y)
-                if (self.maze[y - 1][x] == 'G'
-                    and self.maze[y + 1][x] == 'G'
-                    and self.maze[y][x - 1] != 'G'
-                    and self.maze[y][x + 1] != 'G'
-                    and self.maze[y][x - 2] != 'G'
-                    and self.maze[y][x] != 'G'):
-                    self.break_west(x + 1, y)
         for y in range(len(self.maze)):
             for x in range(len(self.maze[y])):
                 if self.maze[y][x] == 'G':
