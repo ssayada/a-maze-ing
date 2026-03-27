@@ -9,7 +9,31 @@ from ui.cinematique_launch import title_screen
 from ui.game import game_screen
 from ui.menu import menu_screen
 from ui.option import option_screen
+from maze_gen.generator import parse_config_file, write_config_file
+from maze_gen.maze_generator import maze_gen
 
+
+def normalize_points(settings: dict) -> None:
+    w = settings["WIDTH"]
+    h = settings["HEIGHT"]
+
+    def clamp(p: tuple[int, int]) -> tuple[int, int]:
+        x, y = p
+        x = max(0, min(w - 1, x))
+        y = max(0, min(h - 1, y))
+        return (x, y)
+
+    settings["ENTRY"] = clamp(settings["ENTRY"])
+    settings["EXIT"] = clamp(settings["EXIT"])
+
+    # évite ENTRY == EXIT en décalant EXIT (priorité: droite, bas, gauche, haut)
+    if settings["ENTRY"] == settings["EXIT"]:
+        ex, ey = settings["ENTRY"]
+        candidates = [(ex + 1, ey), (ex, ey + 1), (ex - 1, ey), (ex, ey - 1)]
+        for cx, cy in candidates:
+            if 0 <= cx < w and 0 <= cy < h:
+                settings["EXIT"] = (cx, cy)
+                break
 
 
 def lire_maze_bits(path="maze.txt") -> list[list[int]]:
@@ -99,7 +123,6 @@ def launcher() -> None:
     def _run(stdscr):
         title_screen(stdscr, duration=3.0, fps=30)
 
-        # init settings depuis config.txt
         conf = parse_config_file("config.txt")
         settings = {
             "WIDTH": int(conf["WIDTH"]),
@@ -109,17 +132,37 @@ def launcher() -> None:
             "PATH_COLOR": "Rouge",
             "ENTRY_COLOR": "Rouge",
             "EXIT_COLOR": "Vert",
+
+            # champs nécessaires à la génération
+            "ENTRY": conf["ENTRY"],
+            "EXIT": conf["EXIT"],
+            "OUTPUT_FILE": conf.get("OUTPUT_FILE", "maze.txt"),
+            "PERFECT": conf.get("PERFECT", True),
         }
 
-        """def regenerate() -> None:
-            # 1) écrit config.txt
-            write_config_file(settings, "config.txt")
-            # 2) relit + valide
-            conf2 = parse_config_file("config.txt")
-            # 3) génère maze.txt
-            maze_gen(conf2, conf2["OUTPUT_FILE"])
+        def regenerate() -> None:
+            normalize_points(settings)
+            stdscr.erase()
+            stdscr.addstr(2, 2, "Generating maze... please wait", curses.A_BOLD)
+            stdscr.refresh()
+            new_conf = {
+                "WIDTH": settings["WIDTH"],
+                "HEIGHT": settings["HEIGHT"],
+                "ENTRY": settings["ENTRY"],
+                "EXIT": settings["EXIT"],
+                "OUTPUT_FILE": settings["OUTPUT_FILE"],
+                "PERFECT": settings["PERFECT"],
+            }
 
-        regenerate()"""
+            write_config_file(new_conf, "config.txt")
+            conf2 = parse_config_file("config.txt")
+            if not conf2:
+                raise ValueError("Config invalide après écriture (regenerate).")
+
+            maze_gen(conf2, conf2.get("OUTPUT_FILE", "maze.txt"))
+
+        # 1) nouveau maze au lancement (obligatoire)
+        regenerate()
 
         while True:
             action = menu_screen(stdscr, title="A-MAZE-ING")
@@ -128,13 +171,15 @@ def launcher() -> None:
 
             if action == "options":
                 option_screen(stdscr, settings)
-                """regenerate()"""
+                normalize_points(settings)
+                # si tu veux que changer WIDTH/HEIGHT regen direct:
+                regenerate()
                 continue
 
             if action == "start":
                 def render():
                     return afficher_labyrinthe_murs(
-                        fichier="maze.txt",
+                        fichier=settings["OUTPUT_FILE"],
                         symb_type=settings["SYMBOL_THEME"],
                         beautify=settings["BEAUTIFY"],
                     )
@@ -142,13 +187,12 @@ def launcher() -> None:
                 game_screen(
                     stdscr,
                     render_fn=render,
-                    on_regenerate=None,
+                    on_regenerate=regenerate,  # 2) regen dans le jeu sur "R"
                     path_color_name=settings["PATH_COLOR"],
                     entry_color_name=settings["ENTRY_COLOR"],
                     exit_color_name=settings["EXIT_COLOR"],
                     title="A-MAZE-ING",
                 )
-                # retour game_screen -> menu
                 continue
 
     curses.wrapper(_run)

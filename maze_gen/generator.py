@@ -26,43 +26,62 @@ class ConfigModel(BaseModel):
         return v
 
 
+def _parse_bool(s: str) -> bool:
+    s = s.strip().lower()
+    if s in ("true", "1", "yes", "y", "on"):
+        return True
+    if s in ("false", "0", "no", "n", "off"):
+        return False
+    raise ValueError(f"Invalid boolean value: {s}")
+
+
 #Parse the config.txt file
 def parse_config_file(config_file: str) -> dict:
     configs = {}
     try:
-        with open(config_file) as f:
+        with open(config_file, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line and "=" in line:
-                    key, value = line.split("=")
+                    key, value = line.split("=", 1)
                     configs[key.strip()] = value.strip()
-        for k in configs.keys():
-            if k == "WIDTH" or k == "HEIGHT":
+
+        for k in list(configs.keys()):
+            if k in ("WIDTH", "HEIGHT"):
                 configs[k] = int(configs[k])
-            elif k == "ENTRY" or k == "EXIT":
-                x, y = configs[k].split(',')
+            elif k in ("ENTRY", "EXIT"):
+                x, y = configs[k].split(",")
                 configs[k] = (int(x), int(y))
             elif k == "PERFECT":
-                configs[k] = bool(configs[k])
-    except ValueError:
-        print(f"Invalid '{config_file}' file: too many '=' in 'line {line}'.")
+                configs[k] = _parse_bool(configs[k])
+    except Exception as e:
+        print(f"Invalid '{config_file}' file: {e}")
         return {}
-    if verify_config_file(configs):
-        return configs
-    else:
-        return {}
+    return configs if verify_config_file(configs) else {}
 
 
 #Verify the config.txt file with pydantic and the custom error
 def verify_config_file(configs: dict) -> bool:
     try:
-        verif = ConfigModel(**configs)
-        if configs['ENTRY'] == configs['EXIT']:
+        ConfigModel(**configs)
+        if configs["ENTRY"] == configs["EXIT"]:
             raise EntryExitError("ENTRY and EXIT points are identic.")
         return True
     except ValidationError:
-        print("Invalid '{config_file}' file: missing a mandatory key.")
+        print(f"Invalid '{configs}' file: missing/invalid keys.")
         return False
     except EntryExitError as e:
         print(f"Error: {e}")
         return False
+
+def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
+    lines = [
+        f"WIDTH={int(configs['WIDTH'])}",
+        f"HEIGHT={int(configs['HEIGHT'])}",
+        f"ENTRY={configs['ENTRY'][0]},{configs['ENTRY'][1]}",
+        f"EXIT={configs['EXIT'][0]},{configs['EXIT'][1]}",
+        f"OUTPUT_FILE={configs.get('OUTPUT_FILE', 'maze.txt')}",
+        f"PERFECT={'True' if configs.get('PERFECT', True) else 'False'}",
+    ]
+    with open(config_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")

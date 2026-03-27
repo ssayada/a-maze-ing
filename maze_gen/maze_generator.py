@@ -1,6 +1,5 @@
 from time import sleep
 from random import randint
-from a_maze_ing import launcher
 
 
 class Maze:
@@ -167,7 +166,14 @@ class Maze:
 
 
     def move_back(self, x, y) -> tuple:
+        max_back = self.get_width() * self.get_height() * 20
+        it = 0
+    
         while self.adjacents_visited(x, y):
+            it += 1
+            if it > max_back:
+                raise RuntimeError(f"move_back exceeded {max_back} iterations at {(x,y)}")
+    
             move = randint(0, 3)
             if move == 0 and self.north_open(x, y):
                 if not self.is_forty_two(x, y - 1):
