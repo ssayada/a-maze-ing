@@ -1,5 +1,6 @@
 import curses
 
+
 class Colors:
     MAP = {
         "Rouge": curses.COLOR_RED,

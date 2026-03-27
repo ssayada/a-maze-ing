@@ -4,12 +4,12 @@ import time
 
 
 TITLE_ART = [
-    r"     ___             __  __    _    ______   _____        _____ _   _   ____ ",
-    r"    / _ \           |  \/  |  / \  |___  /  | ____|      |_   _| \ | | / ___|",
-    r"   / /_\ \    ___   | |\/| | / _ \    / /   |  _|    ___   | | |  \| || |  _ ",
-    r"  / / _ \ \  |___|  | |  | |/ ___ \  / /__  | |___  |___|  | | | |\  || |_| |",
-    r" /_/     \_\        |_|  |_/_/   \_\/_____| |_____|       |___||_| \_| \____|",
-    r"                               BY  A - M A Z E - T E A M                     ",
+    r"    ___          __  __    _    ______  _____       _____ _   _   ____ ",
+    r"   / _ \        |  \/  |  / \  |___  / | ____|     |_   _| \ | | / ___|",
+    r"  / /_\ \   ___ | |\/| | / _ \    / /  |  _|   ___   | | |  \| || |  _ ",
+    r" / / _ \ \ |___|| |  | |/ ___ \  / /__ | |___ |___|  | | | |\  || |_| |",
+    r"/_/     \_\     |_|  |_/_/   \_\/_____||_____|      |___||_| \_| \____|",
+    r"                           BY  A - M A Z E - T E A M                 ",
 ]
 
 
@@ -42,7 +42,6 @@ def title_screen(stdscr, duration: float = 2.8, fps: int = 30) -> None:
     frame = 0
 
     while True:
-        now = time.time()
 
         # touche pour passer
         ch = stdscr.getch()
@@ -55,9 +54,7 @@ def title_screen(stdscr, duration: float = 2.8, fps: int = 30) -> None:
         # oscillation horizontale (petit mouvement)
         # amplitude limitée pour rester visible
         amp = max(1, min(6, (w - title_w) // 4 if w > title_w else 1))
-        xoff = int(amp * (1 if ((frame // 20) % 2 == 0) else -1))  # gauche/droite "léger"
-        # variante plus smooth (sinus) si tu veux:
-        # xoff = int(amp * math.sin(frame / 10.0))
+        xoff = int(amp * (1 if ((frame // 20) % 2 == 0) else -1))
 
         top = max(0, (h // 2) - (title_h // 2))
         left = max(0, (w // 2) - (title_w // 2) + xoff)
@@ -74,7 +71,8 @@ def title_screen(stdscr, duration: float = 2.8, fps: int = 30) -> None:
                 stars[i][1] = sc
 
             # évite de dessiner sur le titre (zone approximative)
-            if top - 1 <= sr <= top + title_h and left - 2 <= sc <= left + title_w + 2:
+            if (top - 1 <= sr <= top + title_h and left - 2
+                    <= sc <= left + title_w + 2):
                 continue
 
             if 0 <= sr < h and 0 <= sc < w:
@@ -95,7 +93,7 @@ def title_screen(stdscr, duration: float = 2.8, fps: int = 30) -> None:
         # texte "Press any key"
         hint = "Press any key to start"
         hr = min(h - 1, top + title_h + 2)
-        hc = max(0, (w // 2) - (len(hint) // 2)) # emplacement du texte
+        hc = max(0, (w // 2) - (len(hint) // 2))  # emplacement du texte
         if frame % 20 < 12:  # clignotement
             try:
                 stdscr.addstr(hr, hc, hint[: max(0, w - hc)])

@@ -4,11 +4,14 @@ from typing import Optional
 from ui.colors import Colors
 
 # render_fn returns: (maze_lines, moves, path)
-RenderFn = Callable[[], tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]]
+RenderFn = (Callable[[],
+            tuple[list[str],
+            str, list[tuple[int, int]], set[tuple[int, int]]]])
 RegenerateFn = Callable[[], None]
 
 
-def _path_to_out_positions(path: list[tuple[int, int]]) -> set[tuple[int, int]]:
+def _path_to_out_positions(
+        path: list[tuple[int, int]]) -> set[tuple[int, int]]:
     pos: set[tuple[int, int]] = set()
     if not path:
         return pos
@@ -55,7 +58,6 @@ def game_screen(
     stdscr.nodelay(False)
     stdscr.keypad(True)
 
-        # couleurs
     if curses.has_colors():
         curses.start_color()
         try:
@@ -112,7 +114,8 @@ def game_screen(
         stdscr.erase()
         h, w = stdscr.getmaxyx()
 
-        header = f"{title} - M: Menu - R: Regenerate - P: Path {'ON' if show_path else 'OFF'}"
+        header = f"{title} - M: Menu - R: Regenerate - \
+P: Path {'ON' if show_path else 'OFF'}"
         x0 = max(0, (w - len(header)) // 2)
         try:
             stdscr.addstr(0, x0, header, curses.A_BOLD)
@@ -120,7 +123,7 @@ def game_screen(
             pass
 
         maze_h = len(maze_lines)
-        maze_w = max((len(l) for l in maze_lines), default=0)
+        maze_w = max((len(ll) for ll in maze_lines), default=0)
 
         needed_h = 2 + maze_h + 2
         needed_w = max(len(header), maze_w, 20)
@@ -129,7 +132,8 @@ def game_screen(
             msg1 = "Terminal trop petit pour afficher le labyrinthe."
             msg2 = f"Taille mini ~ {needed_w}x{needed_h}  (actuel: {w}x{h})"
             msg3 = "Agrandis la fenêtre, puis appuie sur S. Q pour quitter."
-            for (yy, msg, attr) in [(3, msg1, curses.A_BOLD), (5, msg2, 0), (7, msg3, 0)]:
+            for (yy, msg, attr) in [(3, msg1, curses.A_BOLD),
+                                    (5, msg2, 0), (7, msg3, 0)]:
                 try:
                     stdscr.addstr(yy, max(0, (w - len(msg)) // 2), msg, attr)
                 except curses.error:
@@ -143,7 +147,7 @@ def game_screen(
                 y = top + r
                 if y >= h - 2:
                     break
-                # dessine caractère par caractère pour pouvoir colorer le chemin
+            # dessine caractère par caractère pour pouvoir colorer le chemin
                 for c, ch in enumerate(line):
                     x = left + c
                     if x >= w - 1:

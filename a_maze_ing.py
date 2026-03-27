@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 import curses
 from maze_gen.ourtypes import Dir
-from maze_gen.generator import parse_config_file
 from solver import a_star, path_to_moves
 from ui.symbol import Symbol
 from ui.beautify import beautify_junctions
@@ -26,7 +25,6 @@ def normalize_points(settings: dict) -> None:
     settings["ENTRY"] = clamp(settings["ENTRY"])
     settings["EXIT"] = clamp(settings["EXIT"])
 
-    # évite ENTRY == EXIT en décalant EXIT (priorité: droite, bas, gauche, haut)
     if settings["ENTRY"] == settings["EXIT"]:
         ex, ey = settings["ENTRY"]
         candidates = [(ex + 1, ey), (ex, ey + 1), (ex - 1, ey), (ex, ey - 1)]
@@ -53,7 +51,8 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     for y, row in enumerate(grid):
         if len(row) != length:
             # Ton message personnalisé
-            raise ValueError(f"maze.txt: ligne {y} de longueur {len(row)} au lieu de {length}")
+            raise ValueError(f"maze.txt: ligne {y} de longueur \
+{len(row)} au lieu de {length}")
 
     return grid
 
@@ -63,7 +62,7 @@ def afficher_labyrinthe_murs(
     symb_type: str = "C",
     beautify: bool = False,
     show_closed: bool = False,
-) -> tuple[list[str], str, list[tuple[int,int]], set[tuple[int,int]]]:
+) -> tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]:
     conf_file = parse_config_file("config.txt")
     if fichier is None:
         fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
@@ -85,9 +84,11 @@ def afficher_labyrinthe_murs(
                     closed_cells.add((2 * y + 1, 2 * x + 1))
 
     if not (0 <= ex < width and 0 <= ey < height):
-        raise ValueError(f"ENTRY hors labyrinthe: ({ex},{ey}) pour width={width}, height={height}")
+        raise ValueError(f"ENTRY hors labyrinthe: \
+({ex},{ey}) pour width={width}, height={height}")
     if not (0 <= sx < width and 0 <= sy < height):
-        raise ValueError(f"EXIT hors labyrinthe: ({sx},{sy}) pour width={width}, height={height}")
+        raise ValueError(f"EXIT hors labyrinthe: \
+({sx},{sy}) pour width={width}, height={height}")
 
     out = [[" " for _ in range(2 * width + 1)] for _ in range(2 * height + 1)]
 
@@ -100,10 +101,18 @@ def afficher_labyrinthe_murs(
             cell = grid[y][x]
             out[2 * y + 1][2 * x + 1] = symbol.FILL
 
-            out[2 * y][2 * x + 1]     = symbol.H_WALL if (cell & Dir.N) else symbol.FILL
-            out[2 * y + 2][2 * x + 1] = symbol.H_WALL if (cell & Dir.S) else symbol.FILL
-            out[2 * y + 1][2 * x]     = symbol.V_WALL if (cell & Dir.W) else symbol.FILL
-            out[2 * y + 1][2 * x + 2] = symbol.V_WALL if (cell & Dir.E) else symbol.FILL
+            out[2 * y][2 * x + 1] = (
+                symbol.H_WALL if (cell & Dir.N) else symbol.FILL
+                )
+            out[2 * y + 2][2 * x + 1] = (
+                symbol.H_WALL if (cell & Dir.S) else symbol.FILL
+                )
+            out[2 * y + 1][2 * x] = (
+                symbol.V_WALL if (cell & Dir.W) else symbol.FILL
+                )
+            out[2 * y + 1][2 * x + 2] = (
+                symbol.V_WALL if (cell & Dir.E) else symbol.FILL
+                )
 
     entry_r, entry_c = 2 * ey + 1, 2 * ex + 1
     exit_r, exit_c = 2 * sy + 1, 2 * sx + 1
@@ -148,7 +157,9 @@ def launcher() -> None:
         def regenerate() -> None:
             normalize_points(settings)
             stdscr.erase()
-            stdscr.addstr(2, 2, "Generating maze... please wait", curses.A_BOLD)
+            stdscr.addstr(
+                2, 2, "Generating maze... please wait", curses.A_BOLD
+                )
             stdscr.refresh()
             new_conf = {
                 "WIDTH": settings["WIDTH"],
@@ -162,7 +173,8 @@ def launcher() -> None:
             write_config_file(new_conf, "config.txt")
             conf2 = parse_config_file("config.txt")
             if not conf2:
-                raise ValueError("Config invalide après écriture (regenerate).")
+                raise ValueError("Config invalide après \
+écriture (regenerate).")
 
             maze_gen(conf2, conf2.get("OUTPUT_FILE", "maze.txt"))
 

@@ -1,5 +1,6 @@
 import curses
 
+
 def _clamp_int(value: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, value))
 
@@ -34,6 +35,7 @@ def _wrap_int(value: int, lo: int, hi: int) -> int:
         return hi
     return value
 
+
 def _make_odd(n: int) -> int:
     return n if (n % 2 == 1) else (n + 1)
 
@@ -42,7 +44,6 @@ def option_screen(stdscr, settings: dict) -> dict:
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
-
 
     fields = [
         "WIDTH", "HEIGHT",
@@ -73,7 +74,7 @@ def option_screen(stdscr, settings: dict) -> dict:
             max_width -= 1
         if max_height % 2 == 0:
             max_height -= 1
-    
+
         title = "Options"
         stdscr.addstr(2, max(0, (w - len(title)) // 2), title, curses.A_BOLD)
         help_txt = "↑/↓: choisir — ←/→: modifier — Entrée: back — R: reset"
@@ -102,19 +103,25 @@ def option_screen(stdscr, settings: dict) -> dict:
             elif f == "EXIT_Y":
                 line = f"EXIT_Y: {sy}"
             elif f == "PERFECT":
-                line = f"PERFECT: {'ON' if settings.get('PERFECT', True) else 'OFF'}"
+                line = f"PERFECT: \
+                    {'ON' if settings.get('PERFECT', True) else 'OFF'}"
             elif f == "COLOR_42":
-                line = f"COLOR_42: {'ON' if settings.get('COLOR_42', False) else 'OFF'}"
+                line = f"COLOR_42: \
+                    {'ON' if settings.get('COLOR_42', False) else 'OFF'}"
             elif f == "WALL_COLOR":
-                line = f"WALL_COLOR: {settings.get('WALL_COLOR', 'Blanc')}"
+                line = f"WALL_COLOR: \
+                    {settings.get('WALL_COLOR', 'Blanc')}"
             elif f == "SYMBOL_THEME":
-                line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
+                line = f"SYMBOL_THEME: \
+                    {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
-                line = f"BEAUTIFY: {'ON' if settings['BEAUTIFY'] else 'OFF'}"
+                line = f"BEAUTIFY: \
+                    {'ON' if settings['BEAUTIFY'] else 'OFF'}"
             elif f == "PATH_COLOR":
                 line = f"PATH_COLOR: {settings['PATH_COLOR']}"
 
-            stdscr.addstr(start_y + i, max(0, (w - len(line)) // 2), line, attr)
+            stdscr.addstr(start_y + i, max(0,
+                                           (w - len(line)) // 2), line, attr)
 
         stdscr.refresh()
 
@@ -176,12 +183,18 @@ def option_screen(stdscr, settings: dict) -> dict:
             elif f == "BEAUTIFY":
                 settings["BEAUTIFY"] = not settings["BEAUTIFY"]
             elif f == "PATH_COLOR":
-                colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
-                cur = colors.index(settings["PATH_COLOR"]) if settings["PATH_COLOR"] in colors else 0
+                colors = [
+                    "Rouge", "Bleu", "Vert", "Jaune",
+                    "Cyan", "Blanc", "Noir"]
+                cur = (colors.index(settings["PATH_COLOR"])
+                       if settings["PATH_COLOR"] in colors else 0)
                 settings["PATH_COLOR"] = colors[(cur + delta) % len(colors)]
             elif f == "WALL_COLOR":
-                colors = ["Rouge", "Bleu", "Vert", "Jaune", "Cyan", "Blanc", "Noir"]
-                cur = colors.index(settings["WALL_COLOR"]) if settings.get("WALL_COLOR") in colors else 0
+                colors = [
+                    "Rouge", "Bleu", "Vert", "Jaune",
+                    "Cyan", "Blanc", "Noir"]
+                cur = (colors.index(settings["WALL_COLOR"])
+                       if settings.get("WALL_COLOR") in colors else 0)
                 settings["WALL_COLOR"] = colors[(cur + delta) % len(colors)]
             _normalize_entry_exit(settings)
 

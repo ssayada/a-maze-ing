@@ -38,7 +38,9 @@ def reconstruct_path(came_from: dict[Cell, Cell], cur: Cell) -> list[Cell]:
 
 
 # Algo A-star
-def a_star(grid: list[list[int]], start: Cell, goal: Cell) -> Optional[list[Cell]]:
+def a_star(
+        grid: list[list[int]], start: Cell, goal: Cell
+        ) -> Optional[list[Cell]]:
     open_heap: list[tuple[int, int, Cell]] = []
     heapq.heappush(open_heap, (manhattan(start, goal), 0, start))
 
@@ -61,7 +63,9 @@ def a_star(grid: list[list[int]], start: Cell, goal: Cell) -> Optional[list[Cell
             if tentative_g < g_score.get(nb, 10**18):
                 came_from[nb] = cur
                 g_score[nb] = tentative_g
-                heapq.heappush(open_heap, (tentative_g + manhattan(nb, goal), tentative_g, nb))
+                heapq.heappush(
+                    open_heap, (tentative_g + manhattan(nb, goal),
+                                tentative_g, nb))
 
     return None
 
@@ -80,11 +84,15 @@ def path_to_moves(path: list[Cell]) -> str:
         elif dx == -1 and dy == 0:
             moves.append("W")
         else:
-            raise ValueError(f"Pas un déplacement 4-directionnel: {(x0,y0)} -> {(x1,y1)}")
+            raise ValueError(f"Pas un déplacement 4-directionnel: \
+{(x0, y0)} -> {(x1, y1)}")
     return "".join(moves)
 
+
 # permet de marquer le chemin dans l'affichage
-def draw_path_on_out(out: list[list[str]], path: list[Cell], symbol: str = "%") -> None:
+def draw_path_on_out(
+        out: list[list[str]], path: list[Cell],
+        symbol: str = "%") -> None:
     for x, y in path:
         r, c = 2 * y + 1, 2 * x + 1
         if out[r][c] not in ("#", "$"):

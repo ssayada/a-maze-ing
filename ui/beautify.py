@@ -1,5 +1,6 @@
 from .symbol import Symbol
 
+
 def beautify_junctions(out: list[list[str]], symb_type: str) -> None:
     symbol = Symbol(symb_type, 2)
     h = len(out)

@@ -1,14 +1,14 @@
 from pydantic import BaseModel, field_validator, ValidationError
 
 
-#Custom error if ENTRY and EXIT are on the same coordinates
+# Custom error if ENTRY and EXIT are on the same coordinates
 class EntryExitError(Exception):
     def __init__(self, message) -> None:
         self.message = message
         super().__init__(self.message)
 
 
-#Pydantic model which is used to verify the config.txt file
+# Pydantic model which is used to verify the config.txt file
 class ConfigModel(BaseModel):
     WIDTH: int
     HEIGHT: int
@@ -35,7 +35,7 @@ def _parse_bool(s: str) -> bool:
     raise ValueError(f"Invalid boolean value: {s}")
 
 
-#Parse the config.txt file
+# Parse the config.txt file
 def parse_config_file(config_file: str) -> dict:
     configs = {}
     try:
@@ -60,7 +60,7 @@ def parse_config_file(config_file: str) -> dict:
     return configs if verify_config_file(configs) else {}
 
 
-#Verify the config.txt file with pydantic and the custom error
+# Verify the config.txt file with pydantic and the custom error
 def verify_config_file(configs: dict) -> bool:
     try:
         ConfigModel(**configs)
@@ -73,6 +73,7 @@ def verify_config_file(configs: dict) -> bool:
     except EntryExitError as e:
         print(f"Error: {e}")
         return False
+
 
 def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
     lines = [
