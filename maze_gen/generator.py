@@ -39,8 +39,8 @@ def _parse_bool(s: str) -> bool:
 def parse_config_file(config_file: str) -> dict:
     configs = {
                 "WIDTH": 0, "HEIGHT": 0,
-                "ENTRY":(), "EXIT": (),
-                "OUTPUT_FILE":"maze.txt",
+                "ENTRY": (), "EXIT": (),
+                "OUTPUT_FILE": "maze.txt",
                 "PERFECT": True}
     try:
         with open(config_file, encoding="utf-8") as f:

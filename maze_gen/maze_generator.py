@@ -467,7 +467,6 @@ class Maze:
             for x in range(len(self.maze[y])):
                 if self.maze[y][x] == 'G':
                     self.maze[y][x] = 'F'
-    
 
     def _get_reachable(self) -> set[tuple[int, int]]:
         """Return the set of all cells reachable from the entry point.
@@ -497,7 +496,6 @@ class Maze:
                 queue.append((cx - 1, cy))
 
         return visited
-
 
     def connect_isolated_cells(self, perfect: bool) -> None:
         """Ensure all non-'42' cells are reachable from the entry point.

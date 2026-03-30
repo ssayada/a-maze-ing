@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 import curses
+"""from typing import Any"""
 from maze_gen.ourtypes import Dir
 from solver import a_star, path_to_moves
 from ui.symbol import Symbol
@@ -50,7 +51,6 @@ def add_info_maze(moves: str) -> None:
         file.write(f"{exit_x}{exit_y}\n")
         file.write(f"{moves}")
 
-    
 
 def read_maze_bits(path="maze.txt") -> list[list[int]]:
 
@@ -85,13 +85,15 @@ def show_maze_walls(
     show_closed: bool = False,
 ) -> tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]:
     conf_file = parse_config_file("config.txt")
+    if not conf_file:
+        raise ValueError("config.txt invalide ou illisible")
     if fichier is None:
         fichier = conf_file.get("OUTPUT_FILE", "maze.txt")
 
     symbol = Symbol(symb_type, 1)
 
-    ex, ey = map(int, conf_file.get("ENTRY"))
-    sx, sy = map(int, conf_file.get("EXIT"))
+    ex, ey = conf_file["ENTRY"]
+    sx, sy = conf_file["EXIT"]
 
     grid = read_maze_bits(fichier)
 
@@ -148,7 +150,7 @@ def show_maze_walls(
 
     moves = path_to_moves(path)
     with open("maze.txt", "r") as file:
-        if not moves in file:
+        if moves not in file:
             add_info_maze(moves)
 
     if beautify:

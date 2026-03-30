@@ -167,12 +167,6 @@ P: Path {'ON' if show_path else 'OFF'}"
                         else:
                             _safe_addch(stdscr, y, x, ch)
 
-            footer = f"Moves: {moves}"
-            try:
-                stdscr.addstr(h - 2, 1, footer[: max(0, w - 2)])
-            except curses.error:
-                pass
-
             stdscr.refresh()
 
         key = stdscr.getch()
