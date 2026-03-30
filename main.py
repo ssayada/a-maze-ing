@@ -2,7 +2,10 @@ from launcher import launcher
 
 
 def main():
-    launcher()
+    try:
+        launcher()
+    except OSError as e:
+        print(e)
 
 
 if __name__ == "__main__":
