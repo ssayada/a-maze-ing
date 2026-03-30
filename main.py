@@ -1,4 +1,4 @@
-from a_maze_ing import launcher
+from launcher import launcher
 
 
 def main():

@@ -1,5 +1,5 @@
 #Program name
-NAME = a_maze_ing.py
+NAME = launcher.py
 CONFIG = config.txt
 
 # Commandes
