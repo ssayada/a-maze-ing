@@ -2,6 +2,7 @@ import curses
 from collections.abc import Callable
 from typing import Optional
 from ui.colors import Colors
+from typing import Any
 
 # render_fn returns: (maze_lines, moves, path)
 RenderFn = (Callable[[],
@@ -36,7 +37,7 @@ def _path_to_out_positions(
     return pos
 
 
-def _safe_addch(stdscr, y: int, x: int, ch: str, attr: int = 0) -> bool:
+def _safe_addch(stdscr: Any, y: int, x: int, ch: str, attr: int = 0) -> bool:
     try:
         stdscr.addch(y, x, ch, attr)
         return True
@@ -45,7 +46,7 @@ def _safe_addch(stdscr, y: int, x: int, ch: str, attr: int = 0) -> bool:
 
 
 def game_screen(
-    stdscr,
+    stdscr: Any,
     render_fn: RenderFn,
     on_regenerate: Optional[RegenerateFn] = None,
     path_color_name: str = "Rouge",

@@ -13,7 +13,7 @@ def main():
         print(e)
     except FileNotFoundError as e:
         print(e)
-    except KeyError as e:
+    except KeyError:
         print("init_config.txt invalide ou illisible")
 
 

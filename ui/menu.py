@@ -1,7 +1,8 @@
 import curses
+from typing import Any
 
 
-def menu_screen(stdscr, title="A-MAZE-ING") -> str:
+def menu_screen(stdscr: Any, title: str = "A-MAZE-ING") -> str:
     curses.curs_set(0)  # affichage du curseur
     stdscr.nodelay(False)  # bloque en attendant qu'une touche soit presse
     stdscr.keypad(True)  # traduit les touches speciales

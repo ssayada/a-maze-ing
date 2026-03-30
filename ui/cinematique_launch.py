@@ -1,6 +1,7 @@
 import curses
 import random
 import time
+from typing import Any
 
 
 TITLE_ART = [
@@ -13,7 +14,7 @@ TITLE_ART = [
 ]
 
 
-def title_screen(stdscr, duration: float = 2.8, fps: int = 30) -> None:
+def title_screen(stdscr: Any, duration: float = 2.8, fps: int = 30) -> None:
     """
     Affiche un écran titre 'A-MAZE-ING' en ASCII qui bouge gauche/droite,
     avec des étoiles autour (scintillement).

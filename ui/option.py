@@ -1,4 +1,5 @@
 import curses
+from typing import Any
 
 
 def _clamp_int(value: int, lo: int, hi: int) -> int:
@@ -40,7 +41,7 @@ def _make_odd(n: int) -> int:
     return n if (n % 2 == 1) else (n + 1)
 
 
-def option_screen(stdscr, settings: dict) -> dict:
+def option_screen(stdscr: Any, settings: dict) -> dict:
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
