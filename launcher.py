@@ -143,7 +143,6 @@ def show_maze_walls(
     start = (ex, ey)
     goal = (sx, sy)
     path = a_star(grid, start, goal)
-    add_info_maze(path_to_moves(path))
     if path is None:
         raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
 
@@ -200,12 +199,9 @@ def launcher() -> None:
             if not conf2:
                 raise ValueError("Config invalide après \
 écriture (regenerate).")
-
             maze_gen(conf2, conf2.get("OUTPUT_FILE", "maze.txt"))
 
         # 1) nouveau maze au lancement (obligatoire)
-        regenerate()
-
         while True:
             action = menu_screen(stdscr, title="A-MAZE-ING")
             if action == "quit":
