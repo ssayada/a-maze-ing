@@ -14,12 +14,9 @@ run:
 	$(PYTHON) $(NAME) $(CONFIG)
 
 clean:
-	rm -rf __pycache__
+	rm -rf __pycache__ maze_gen/__pycache__ ui/__pycache__
 	rm -rf .pytest_cache
-	rm -rf .mypy_cache
-	rm -rf dist
-	rm -rf build
-	rm -rf *.egg-info
+	rm -rf .mypy_cache maze_gen/.mypy_cache ui/mypy_cache
 
 lint:
 	$(PYTHON) -m flake8 .
