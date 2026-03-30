@@ -34,7 +34,7 @@ def normalize_points(settings: dict) -> None:
                 break
 
 
-def add_info_maze() -> None:
+def add_info_maze(moves: str) -> None:
     def my_trim(s: str) -> str:
         return s[1:-1]
     conf = parse_config_file("config.txt")
@@ -47,11 +47,12 @@ def add_info_maze() -> None:
     with open("maze.txt", "a") as file:
         file.write("\n")
         file.write(f"{entry_x}{entry_y}\n")
-        file.write(f"{exit_x}{exit_y}")
+        file.write(f"{exit_x}{exit_y}\n")
+        file.write(f"{moves}")
 
     
 
-def lire_maze_bits(path="maze.txt") -> list[list[int]]:
+def read_maze_bits(path="maze.txt") -> list[list[int]]:
 
     grid: list[list[int]] = []
     with open(path, "r", encoding="utf-8") as f:
@@ -77,7 +78,7 @@ def lire_maze_bits(path="maze.txt") -> list[list[int]]:
     return grid
 
 
-def afficher_labyrinthe_murs(
+def show_maze_walls(
     fichier: str = "maze.txt",
     symb_type: str = "C",
     beautify: bool = False,
@@ -92,7 +93,7 @@ def afficher_labyrinthe_murs(
     ex, ey = map(int, conf_file.get("ENTRY"))
     sx, sy = map(int, conf_file.get("EXIT"))
 
-    grid = lire_maze_bits(fichier)
+    grid = read_maze_bits(fichier)
 
     height = len(grid)
     width = len(grid[0])
@@ -142,10 +143,14 @@ def afficher_labyrinthe_murs(
     start = (ex, ey)
     goal = (sx, sy)
     path = a_star(grid, start, goal)
+    add_info_maze(path_to_moves(path))
     if path is None:
         raise ValueError("Aucun chemin trouve entre ENTRY et EXIT")
 
     moves = path_to_moves(path)
+    with open("maze.txt", "r") as file:
+        if not moves in file:
+            add_info_maze(moves)
 
     if beautify:
         beautify_junctions(out, symb_type)
@@ -215,7 +220,7 @@ def launcher() -> None:
 
             if action == "start":
                 def render():
-                    return afficher_labyrinthe_murs(
+                    return show_maze_walls(
                         fichier=settings["OUTPUT_FILE"],
                         symb_type=settings["SYMBOL_THEME"],
                         beautify=settings["BEAUTIFY"],
