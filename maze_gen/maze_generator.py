@@ -434,6 +434,7 @@ class Maze:
                 x = randint(0, self.config['WIDTH'] - 1)
                 y = randint(0, self.config['HEIGHT'] - 1)
                 self.open_path_imperfect(x, y)
+        self.connect_isolated_cells(perfect)
 
     def forty_two_possible(self) -> bool:
         if self.config['WIDTH'] > 9 and self.config['HEIGHT'] > 7:
@@ -466,6 +467,80 @@ class Maze:
             for x in range(len(self.maze[y])):
                 if self.maze[y][x] == 'G':
                     self.maze[y][x] = 'F'
+    
+
+    def _get_reachable(self) -> set[tuple[int, int]]:
+        """Return the set of all cells reachable from the entry point.
+
+        Uses a BFS traversal following open walls between neighbours.
+
+        Returns:
+            A set of (x, y) tuples for every reachable cell.
+        """
+        start_x, start_y = self.get_entry()
+        visited: set[tuple[int, int]] = set()
+        queue: list[tuple[int, int]] = [(start_x, start_y)]
+
+        while queue:
+            cx, cy = queue.pop(0)
+            if (cx, cy) in visited:
+                continue
+            visited.add((cx, cy))
+
+            if self.north_open(cx, cy):
+                queue.append((cx, cy - 1))
+            if self.east_open(cx, cy):
+                queue.append((cx + 1, cy))
+            if self.south_open(cx, cy):
+                queue.append((cx, cy + 1))
+            if self.west_open(cx, cy):
+                queue.append((cx - 1, cy))
+
+        return visited
+
+
+    def connect_isolated_cells(self, perfect: bool) -> None:
+        """Ensure all non-'42' cells are reachable from the entry point.
+
+        Args:
+            perfect: If True, updates reachable set after each connection
+                    to guarantee no cycles are created.
+
+        Returns:
+            None
+        """
+        W = self.config['WIDTH']
+        H = self.config['HEIGHT']
+        reachable = self._get_reachable()
+
+        for y in range(H):
+            for x in range(W):
+                if (x, y) in reachable or self.is_forty_two(x, y):
+                    continue
+                for nx, ny, direction in [
+                    (x, y - 1, 0),
+                    (x + 1, y, 1),
+                    (x, y + 1, 2),
+                    (x - 1, y, 3),
+                ]:
+                    if (0 <= nx < W and 0 <= ny < H
+                            and (nx, ny) in reachable
+                            and not self.is_forty_two(nx, ny)):
+                        if direction == 0:
+                            self.break_north(x, y)
+                            self.break_south(x, y - 1)
+                        elif direction == 1:
+                            self.break_east(x, y)
+                            self.break_west(x + 1, y)
+                        elif direction == 2:
+                            self.break_south(x, y)
+                            self.break_north(x, y + 1)
+                        elif direction == 3:
+                            self.break_west(x, y)
+                            self.break_east(x - 1, y)
+                        # Mise à jour immédiate : on propage depuis (x,y)
+                        reachable.add((x, y))
+                        break
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
