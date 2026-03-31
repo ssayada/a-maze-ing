@@ -1,4 +1,3 @@
-from time import sleep
 from random import randint, shuffle
 
 
@@ -38,7 +37,7 @@ class Maze:
              'G', ['A', 'B', 'E'], 'G', 'G', 'G']
         ]
         self.left_top_42 = (int((self.config['WIDTH'] / 2) - 3),
-                       int((self.config['HEIGHT'] / 2) - 2))
+                            int((self.config['HEIGHT'] / 2) - 2))
 
     def get_maze(self) -> list:
         return self.maze
@@ -73,7 +72,7 @@ class Maze:
 
     def is_in_forty_two(self, x: int, y: int) -> bool:
         if (self.left_top_42[0] <= x < self.left_top_42[0] + 5
-            and self.left_top_42[1] <= y < self.left_top_42[1] + 7):
+           and self.left_top_42[1] <= y < self.left_top_42[1] + 7):
             return True
         return False
 
@@ -561,21 +560,33 @@ class Maze:
         for y in range(self.config['HEIGHT']):
             for x in range(self.config['WIDTH']):
                 if y > 0 and self.is_forty_two(x, y):
-                    if self.is_forty_two(x, y) and not self.is_forty_two(x, y - 1):
-                        if self.north_open(x, y) and not self.south_open(x, y - 1):
-                            self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y - 1][x]) - 4]
+                    if (self.is_forty_two(x, y)
+                       and not self.is_forty_two(x, y - 1)):
+                        if (self.north_open(x, y)
+                           and not self.south_open(x, y - 1)):
+                            self.maze[y][x] = self.hexa[self.hexa.index(
+                                self.maze[y - 1][x]) - 4]
                 if x < self.config['WIDTH'] - 1:
-                    if self.is_forty_two(x, y) and not self.is_forty_two(x + 1, y):
-                        if self.east_open(x, y) and not self.west_open(x + 1, y):
-                            self.maze[y][x + 1] = self.hexa[self.hexa.index(self.maze[y][x + 1]) - 8]
+                    if (self.is_forty_two(x, y)
+                       and not self.is_forty_two(x + 1, y)):
+                        if (self.east_open(x, y)
+                           and not self.west_open(x + 1, y)):
+                            self.maze[y][x + 1] = self.hexa[self.hexa.index(
+                                self.maze[y][x + 1]) - 8]
                 if y < self.config['HEIGHT'] - 1:
-                    if self.is_forty_two(x, y) and not self.is_forty_two(x, y + 1):
-                        if self.south_open(x, y) and not self.north_open(x, y + 1):
-                            self.maze[y - 1][x] = self.hexa[self.hexa.index(self.maze[y - 1][x]) - 1]
+                    if (self.is_forty_two(x, y)
+                       and not self.is_forty_two(x, y + 1)):
+                        if (self.south_open(x, y)
+                           and not self.north_open(x, y + 1)):
+                            self.maze[y - 1][x] = self.hexa[self.hexa.index(
+                                self.maze[y - 1][x]) - 1]
                 if x > 0:
-                    if self.is_forty_two(x, y) and not self.is_forty_two(x - 1, y):
-                        if self.west_open(x, y) and not self.east_open(x - 1, y):
-                            self.maze[y][x - 1] = self.hexa[self.hexa.index(self.maze[y][x - 1]) - 2]
+                    if (self.is_forty_two(x, y)
+                       and not self.is_forty_two(x - 1, y)):
+                        if (self.west_open(x, y)
+                           and not self.east_open(x - 1, y)):
+                            self.maze[y][x - 1] = self.hexa[self.hexa.index(
+                                self.maze[y][x - 1]) - 2]
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
@@ -597,7 +608,3 @@ def maze_gen(configs: dict, maze_file: str) -> None:
             for c in ll:
                 maze_open.write(c)
             maze_open.write('\n')
-
-
-if __name__ == '__main__':
-    maze_gen('config.txt', 'maze.txt')
