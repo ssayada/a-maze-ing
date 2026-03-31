@@ -1,10 +1,35 @@
+"""Génération et validation d'un labyrinthe encodé en hexadécimal.
+
+Le labyrinthe est une grille de caractères hexadécimaux (0..F) où chaque
+valeur encode les murs d'une cellule. Le générateur construit un chemin
+ENTRY -> EXIT puis complète le reste du labyrinthe (parfait ou imparfait).
+
+Ce module contient aussi des utilitaires pour insérer/éviter le motif "42"
+et pour vérifier la cohérence des murs.
+"""
 from random import randint, shuffle, seed
 
 
 class Maze:
-    '''
-    Class used to generate a random maze
-    '''
+    """Génère un labyrinthe aléatoire à partir d'une configuration.
+
+    Attributes
+    ----------
+    config : dict
+        Paramètres de génération (WIDTH, HEIGHT, ENTRY, EXIT, PERFECT, etc.).
+    maze : list
+        Grille des cellules (caractères hexadécimaux ou marqueurs internes).
+    hexa : list
+        Liste des symboles hexadécimaux utilisables.
+    backtrack : list
+        Historique des directions pour revenir en arrière durant la création.
+    forty_two : list
+        Motif interne permettant de dessiner le "42" dans le labyrinthe.
+    left_top_42 : tuple
+        Coordonnées du coin haut-gauche du motif "42" (si applicable).
+    new_seed : int | None
+        Graine utilisée pour la génération aléatoire (si fournie).
+    """
     maze: list
     hexa: list
     config: dict
@@ -14,6 +39,22 @@ class Maze:
     new_seed: int | None
 
     def __init__(self, config: dict) -> None:
+        """Initialise un générateur de labyrinthe.
+
+        Parameters
+        ----------
+        config : dict
+            Configuration de génération (dimensions, entry/exit, seed, ...).
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Initialise la grille avec 'F' (non visité), prépare les tables
+        hexadécimales et configure la graine aléatoire.
+        """
         self.config = config
         self.maze = []
         for w in range(config['HEIGHT']):
@@ -46,43 +87,155 @@ class Maze:
         seed(self.new_seed)
 
     def get_maze(self) -> list:
+        """Retourne la grille interne du labyrinthe.
+
+        Returns
+        -------
+        list
+            Grille interne (liste de lignes).
+        """
         return self.maze
 
     def get_walls(self, x: int, y: int) -> str:
+        """Retourne la valeur de la cellule (x, y) sous forme de chaîne.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        str
+            Valeur de la cellule.
+        """
         return str(self.maze[y][x])
 
     def get_hexa(self) -> list:
+        """Retourne la liste des symboles hexadécimaux autorisés.
+
+        Returns
+        -------
+        list
+            Liste des caractères hexadécimaux.
+        """
         return self.hexa
 
     def get_entry(self) -> tuple:
+        """Retourne les coordonnées d'entrée.
+
+        Returns
+        -------
+        tuple
+            Coordonnées (x, y) de l'entrée.
+        """
         return tuple(self.config['ENTRY'])
 
     def get_exit(self) -> tuple:
+        """Retourne les coordonnées de sortie.
+
+        Returns
+        -------
+        tuple
+            Coordonnées (x, y) de la sortie.
+        """
         return tuple(self.config['EXIT'])
 
     def get_width(self) -> int:
+        """Retourne la largeur du labyrinthe.
+
+        Returns
+        -------
+        int
+            Largeur (nombre de colonnes).
+        """
         return int(self.config['WIDTH'])
 
     def get_height(self) -> int:
+        """Retourne la hauteur du labyrinthe.
+
+        Returns
+        -------
+        int
+            Hauteur (nombre de lignes).
+        """
         return int(self.config['HEIGHT'])
 
     def is_visited(self, x: int, y: int) -> bool:
+        """Indique si une cellule a déjà été visitée pendant la génération.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si la cellule n'est plus à l'état 'F', sinon False.
+        """
         if self.maze[y][x] != 'F':
             return True
         return False
 
     def is_forty_two(self, x: int, y: int) -> bool:
+        """Indique si une cellule fait partie du motif "42" (zone protégée).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si la cellule n'est pas une valeur hexadécimale standard.
+        """
         if self.maze[y][x] not in self.hexa:
             return True
         return False
 
     def is_in_forty_two(self, x: int, y: int) -> bool:
+        """Indique si une coordonnée tombe dans le rectangle du motif "42".
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si (x, y) est dans la zone du motif, sinon False.
+        """
         if (self.left_top_42[0] <= x < self.left_top_42[0] + 5
            and self.left_top_42[1] <= y < self.left_top_42[1] + 7):
             return True
         return False
 
     def adjacents_visited(self, x: int, y: int) -> bool:
+        """Teste si tous les voisins valides de (x, y) ont été visités.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si aucun voisin non visité n'est disponible, sinon False.
+        """
         if y < self.config['HEIGHT'] - 1:
             if not self.is_visited(x, y + 1):
                 return False
@@ -98,6 +251,23 @@ class Maze:
         return True
 
     def north_possible(self, x: int, y: int) -> bool:
+        """Indique si un déplacement vers le nord est possible.
+
+        Le déplacement est impossible si on sort de la grille, si la cible
+        est déjà visitée, ou si la cible appartient au motif "42".
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le déplacement est autorisé, sinon False.
+        """
         if y <= 0:
             return False
         if self.is_visited(x, y - 1):
@@ -107,9 +277,36 @@ class Maze:
         return True
 
     def break_north(self, x: int, y: int) -> None:
+        """Ouvre le mur nord de la cellule (x, y).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        None
+        """
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 1]
 
     def north_open(self, x: int, y: int) -> bool:
+        """Indique si le mur nord de (x, y) est déjà ouvert.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le passage nord est ouvert, sinon False.
+        """
         if self.is_forty_two(x, y):
             return False
         if self.hexa.index(self.maze[y][x]) % 2 == 0 and y > 0:
@@ -117,6 +314,20 @@ class Maze:
         return False
 
     def east_possible(self, x: int, y: int) -> bool:
+        """Indique si un déplacement vers l'est est possible.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le déplacement est autorisé, sinon False.
+        """
         if x >= self.config['WIDTH'] - 1:
             return False
         if self.is_visited(x + 1, y):
@@ -126,9 +337,36 @@ class Maze:
         return True
 
     def break_east(self, x: int, y: int) -> None:
+        """Ouvre le mur est de la cellule (x, y).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        None
+        """
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 2]
 
     def east_open(self, x: int, y: int) -> bool:
+        """Indique si le mur est de (x, y) est déjà ouvert.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le passage est est ouvert, sinon False.
+        """
         if self.is_forty_two(x, y):
             return False
         if ((0 <= self.hexa.index(self.maze[y][x]) <= 1 or 4
@@ -140,6 +378,20 @@ class Maze:
         return False
 
     def south_possible(self, x: int, y: int) -> bool:
+        """Indique si un déplacement vers le sud est possible.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le déplacement est autorisé, sinon False.
+        """
         if y >= self.config['HEIGHT'] - 1:
             return False
         if self.is_visited(x, y + 1):
@@ -149,9 +401,36 @@ class Maze:
         return True
 
     def break_south(self, x: int, y: int) -> None:
+        """Ouvre le mur sud de la cellule (x, y).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        None
+        """
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 4]
 
     def south_open(self, x: int, y: int) -> bool:
+        """Indique si le mur sud de (x, y) est déjà ouvert.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le passage sud est ouvert, sinon False.
+        """
         if self.is_forty_two(x, y):
             return False
         if (
@@ -162,6 +441,20 @@ class Maze:
         return False
 
     def west_possible(self, x: int, y: int) -> bool:
+        """Indique si un déplacement vers l'ouest est possible.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le déplacement est autorisé, sinon False.
+        """
         if x <= 0:
             return False
         if self.is_visited(x - 1, y):
@@ -171,9 +464,36 @@ class Maze:
         return True
 
     def break_west(self, x: int, y: int) -> None:
+        """Ouvre le mur ouest de la cellule (x, y).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        None
+        """
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 8]
 
     def west_open(self, x: int, y: int) -> bool:
+        """Indique si le mur ouest de (x, y) est déjà ouvert.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        bool
+            True si le passage ouest est ouvert, sinon False.
+        """
         if self.is_forty_two(x, y):
             return False
         if (0 <= self.hexa.index(self.maze[y][x])
@@ -182,6 +502,20 @@ class Maze:
         return False
 
     def move_back(self, x: int, y: int) -> tuple:
+        """Revient en arrière jusqu'à trouver une cellule avec un voisin libre.
+
+        Parameters
+        ----------
+        x : int
+            Colonne de départ.
+        y : int
+            Ligne de départ.
+
+        Returns
+        -------
+        tuple
+            Nouvelle position (x, y) atteinte après backtracking.
+        """
         while self.adjacents_visited(x, y):
             direction = self.backtrack.pop()
             if direction == 'N':
@@ -195,6 +529,17 @@ class Maze:
         return x, y
 
     def create_path(self) -> None:
+        """Crée un chemin entre ENTRY et EXIT en ouvrant des murs.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Utilise un tirage aléatoire de direction et du backtracking lorsque
+        la cellule courante n'a plus de voisin disponible.
+        """
         x, y = self.get_entry()
         x_ex, y_ex = self.get_exit()
         while not (x == x_ex and y == y_ex):
@@ -231,6 +576,13 @@ class Maze:
                     self.backtrack.append('W')
 
     def is_complete(self) -> bool:
+        """Indique si toutes les cellules ont été visitées.
+
+        Returns
+        -------
+        bool
+            True si aucune cellule n'est encore à 'F', sinon False.
+        """
         for m in self.maze:
             for c in m:
                 if c == 'F':
@@ -238,6 +590,19 @@ class Maze:
         return True
 
     def open_path_perfect(self, x: int, y: int) -> None:
+        """Connecte une cellule isolée à une cellule déjà visitée (mode parfait).
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+
+        Returns
+        -------
+        None
+        """
         while True:
             move = randint(0, 3)
             if move == 0:
@@ -421,6 +786,21 @@ class Maze:
         return True
 
     def connect_cases(self, x: int, y: int, dir: int) -> None:
+        """Connecte la cellule (x, y) à un voisin déjà visité si possible.
+
+        Parameters
+        ----------
+        x : int
+            Colonne.
+        y : int
+            Ligne.
+        dir : int
+            Direction (0=N, 1=E, 2=S, 3=W).
+
+        Returns
+        -------
+        None
+        """
         if dir == 0:
             if y > 0:
                 if self.maze[y - 1][x] != 'F':
@@ -443,6 +823,18 @@ class Maze:
                     self.break_east(x - 1, y)
 
     def complete_maze(self, perfect: bool) -> None:
+        """Complète le labyrinthe en visitant les cellules restantes.
+
+        Parameters
+        ----------
+        perfect : bool
+            Si True, cherche à garder un labyrinthe parfait (sans cycles).
+            Si False, ouvre des murs supplémentaires pour créer des cycles.
+
+        Returns
+        -------
+        None
+        """
         if self.maze[0][0] == 'F':
             move = randint(1, 2)
             if move == 1:
@@ -464,14 +856,34 @@ class Maze:
         self.connect_isolated_cells(perfect)
 
     def forty_two_possible(self) -> bool:
+        """Indique si la grille est assez grande pour intégrer le motif "42".
+
+        Returns
+        -------
+        bool
+            True si les dimensions minimales sont respectées, sinon False.
+        """
         if self.config['WIDTH'] > 9 and self.config['HEIGHT'] > 7:
             return True
         return False
 
     def get_forty_two(self) -> tuple:
+        """Retourne des informations liées au motif "42" (placeholder).
+
+        Returns
+        -------
+        tuple
+            Actuellement vide.
+        """
         return ()
 
     def create_forty_two(self) -> None:
+        """Place le motif "42" (zone réservée) dans la grille interne.
+
+        Returns
+        -------
+        None
+        """
         x, y = self.left_top_42
         base_x = x
         for ll in self.forty_two:
@@ -485,6 +897,12 @@ class Maze:
             x = base_x
 
     def draw_forty_two(self) -> None:
+        """Nettoie les marqueurs internes du motif "42" dans la grille.
+
+        Returns
+        -------
+        None
+        """
         for y in range(len(self.maze)):
             for x in range(len(self.maze[y])):
                 if self.maze[y][x] == 'G':
@@ -563,6 +981,17 @@ class Maze:
                         break
 
     def verify_maze(self) -> None:
+        """Vérifie la cohérence des murs autour des cellules du motif "42".
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Corrige certains murs si des incohérences sont détectées entre une
+        cellule "42" et une cellule hexadécimale adjacente.
+        """
         for y in range(self.config['HEIGHT']):
             for x in range(self.config['WIDTH']):
                 if y > 0 and self.is_forty_two(x, y):
@@ -596,9 +1025,19 @@ class Maze:
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
-    '''
-    ez
-    '''
+    """Génère un labyrinthe à partir d'une configuration et l'écrit sur disque.
+
+    Parameters
+    ----------
+    configs : dict
+        Paramètres de génération.
+    maze_file : str
+        Fichier de sortie.
+
+    Returns
+    -------
+    None
+    """
     maze = Maze(configs)
     if maze.forty_two_possible():
         maze.create_forty_two()

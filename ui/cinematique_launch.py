@@ -1,3 +1,4 @@
+"""Écran titre animé en curses (ASCII art et étoiles)."""
 import curses
 import random
 import time

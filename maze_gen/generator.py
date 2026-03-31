@@ -1,9 +1,17 @@
+"""Lecture/validation de la configuration et génération d'un labyrinthe.
+
+Ce module fournit :
+- un modèle Pydantic pour valider les clés de configuration ;
+- des fonctions de parsing/écriture de ``config.txt`` ;
+- un point d'entrée pour générer un labyrinthe via :class:`maze_gen.Maze`.
+"""
 from pydantic import BaseModel, field_validator, ValidationError
 from maze_gen.maze_generator import Maze
 
 
 # Custom error if ENTRY and EXIT are on the same coordinates
 class EntryExitError(Exception):
+    """Erreur levée si ENTRY et EXIT sont identiques après validation."""
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
@@ -11,6 +19,7 @@ class EntryExitError(Exception):
 
 # Pydantic model which is used to verify the config.txt file
 class ConfigModel(BaseModel):
+    """Modèle Pydantic représentant les paramètres attendus dans config.txt."""
     WIDTH: int
     HEIGHT: int
     ENTRY: tuple[int, int]
@@ -21,6 +30,18 @@ class ConfigModel(BaseModel):
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod
     def parse_coords(cls, v: tuple) -> tuple:
+        """Convertit une coordonnée "x,y" en tuple d'entiers.
+
+        Parameters
+        ----------
+        v : tuple
+            Valeur brute (souvent une chaîne "x,y" avant parsing).
+
+        Returns
+        -------
+        tuple
+            Coordonnées converties.
+        """
         if isinstance(v, str):
             x, y = v.split(",")
             return (int(x), int(y))
@@ -28,6 +49,23 @@ class ConfigModel(BaseModel):
 
 
 def _parse_bool(s: str) -> bool:
+    """Convertit une chaîne en booléen.
+
+    Parameters
+    ----------
+    s : str
+        Valeur à convertir.
+
+    Returns
+    -------
+    bool
+        Booléen correspondant.
+
+    Raises
+    ------
+    ValueError
+        Si la valeur n'est pas reconnue.
+    """
     s = s.strip().lower()
     if s in ("true", "1", "yes", "y", "on"):
         return True
@@ -38,6 +76,19 @@ def _parse_bool(s: str) -> bool:
 
 # Parse the config.txt file
 def parse_config_file(config_file: str) -> dict:
+    """Parse un fichier de configuration KEY=VALUE.
+
+    Parameters
+    ----------
+    config_file : str
+        Chemin du fichier (ex. ``config.txt``).
+
+    Returns
+    -------
+    dict
+        Dictionnaire de configuration. Retourne ``{}`` si parsing/validation
+        échoue.
+    """
     configs = {
                 "WIDTH": 0, "HEIGHT": 0,
                 "ENTRY": (), "EXIT": (),
@@ -66,8 +117,19 @@ def parse_config_file(config_file: str) -> dict:
     return configs if verify_config_file(configs) else {}
 
 
-# Verify the config.txt file with pydantic and the custom error
 def verify_config_file(configs: dict) -> bool:
+    """Valide une configuration avec Pydantic et des règles additionnelles.
+
+    Parameters
+    ----------
+    configs : dict
+        Configuration à vérifier.
+
+    Returns
+    -------
+    bool
+        True si la configuration est valide, sinon False.
+    """
     try:
         ConfigModel(**configs)
         if configs["ENTRY"] == configs["EXIT"]:
@@ -82,6 +144,19 @@ def verify_config_file(configs: dict) -> bool:
 
 
 def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
+    """Écrit un fichier de configuration (config.txt) à partir d'un dict.
+
+    Parameters
+    ----------
+    configs : dict
+        Configuration à écrire.
+    config_file : str, default="config.txt"
+        Chemin du fichier cible.
+
+    Returns
+    -------
+    None
+    """
     if "SEED" in configs.keys():
         lines = [
             f"WIDTH={int(configs['WIDTH'])}",
@@ -106,9 +181,19 @@ def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
-    '''
-    ez
-    '''
+    """Génère un labyrinthe et l'écrit dans un fichier.
+
+    Parameters
+    ----------
+    configs : dict
+        Configuration (dimensions, entry/exit, perfect, etc.).
+    maze_file : str
+        Chemin du fichier de sortie (écriture).
+
+    Returns
+    -------
+    None
+    """
     maze = Maze(configs)
     if maze.forty_two_possible():
         maze.create_forty_two()

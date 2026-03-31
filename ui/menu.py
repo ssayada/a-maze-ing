@@ -1,8 +1,23 @@
+"""Écran de menu principal (curses)."""
 import curses
 from typing import Any
 
 
 def menu_screen(stdscr: Any, title: str = "A-MAZE-ING") -> str:
+    """Affiche un menu et retourne l'action sélectionnée.
+
+    Parameters
+    ----------
+    stdscr : Any
+        Fenêtre principale curses.
+    title : str, default="A-MAZE-ING"
+        Titre affiché en haut de l'écran.
+
+    Returns
+    -------
+    str
+        Action choisie parmi ``"start"``, ``"options"`` ou ``"quit"``.
+    """
     curses.curs_set(0)  # affichage du curseur
     stdscr.nodelay(False)  # bloque en attendant qu'une touche soit presse
     stdscr.keypad(True)  # traduit les touches speciales

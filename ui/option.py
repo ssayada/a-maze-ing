@@ -1,16 +1,56 @@
+"""Écran d'options (curses) pour configurer le labyrinthe et l'affichage."""
 import curses
 from typing import Any
 
 
 def _clamp_int(value: int, lo: int, hi: int) -> int:
+    """Borne un entier dans un intervalle [lo, hi].
+
+    Parameters
+    ----------
+    value : int
+        Valeur à borner.
+    lo : int
+        Borne minimale.
+    hi : int
+        Borne maximale.
+
+    Returns
+    -------
+    int
+        Valeur bornée.
+    """
     return max(lo, min(hi, value))
 
 
 def _normalize_entry_exit(settings: dict) -> None:
+    """Normalise ENTRY/EXIT dans les limites et évite ENTRY == EXIT.
+
+    Parameters
+    ----------
+    settings : dict
+        Paramètres modifiés sur place (WIDTH, HEIGHT, ENTRY, EXIT).
+
+    Returns
+    -------
+    None
+    """
     w = settings["WIDTH"]
     h = settings["HEIGHT"]
 
     def clamp(p: tuple[int, int]) -> tuple[int, int]:
+        """Force un point (x, y) à rester dans les bornes du labyrinthe.
+
+        Parameters
+        ----------
+        p : tuple[int, int]
+            Coordonnées (x, y) à borner.
+
+        Returns
+        -------
+        tuple[int, int]
+            Coordonnées bornées.
+        """
         x, y = p
         x = max(0, min(w - 1, x))
         y = max(0, min(h - 1, y))
@@ -30,6 +70,22 @@ def _normalize_entry_exit(settings: dict) -> None:
 
 
 def _wrap_int(value: int, lo: int, hi: int) -> int:
+    """Fait boucler une valeur au-delà des bornes.
+
+    Parameters
+    ----------
+    value : int
+        Valeur.
+    lo : int
+        Borne minimale.
+    hi : int
+        Borne maximale.
+
+    Returns
+    -------
+    int
+        ``lo`` si value > hi, ``hi`` si value < lo, sinon value.
+    """
     if value > hi:
         return lo
     if value < lo:
@@ -38,10 +94,36 @@ def _wrap_int(value: int, lo: int, hi: int) -> int:
 
 
 def _make_odd(n: int) -> int:
+    """Force un entier à être impair.
+
+    Parameters
+    ----------
+    n : int
+        Valeur.
+
+    Returns
+    -------
+    int
+        Valeur inchangée si impaire, sinon n + 1.
+    """
     return n if (n % 2 == 1) else (n + 1)
 
 
 def option_screen(stdscr: Any, settings: dict) -> dict:
+    """Affiche l'écran d'options et modifie les paramètres.
+
+    Parameters
+    ----------
+    stdscr : Any
+        Fenêtre principale curses.
+    settings : dict
+        Paramètres modifiés sur place (dimensions, couleurs, options).
+
+    Returns
+    -------
+    dict
+        Le dictionnaire ``settings`` (mis à jour).
+    """
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)

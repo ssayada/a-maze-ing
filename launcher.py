@@ -1,4 +1,12 @@
 #! /usr/bin/python3
+"""Lanceur principal (curses) et rendu du labyrinthe.
+
+Ce module orchestre :
+- l'écran titre, le menu et les options ;
+- la génération d'un nouveau labyrinthe ;
+- le rendu ASCII/Unicode des murs à partir de la grille hexadécimale ;
+- le calcul du chemin solution (A*) et son affichage.
+"""
 import curses
 from typing import Any
 from maze_gen.ourtypes import Dir
@@ -13,10 +21,37 @@ from maze_gen.generator import parse_config_file, write_config_file, maze_gen
 
 
 def normalize_points(settings: dict) -> None:
+    """Normalise les coordonnées ENTRY/EXIT dans les limites du labyrinthe.
+
+    Les points sont "clampés" dans [0, WIDTH-1] et [0, HEIGHT-1]. Si ENTRY et
+    EXIT deviennent identiques, EXIT est déplacé vers une case adjacente si
+    possible.
+
+    Parameters
+    ----------
+    settings : dict
+        Dictionnaire de paramètres (doit contenir WIDTH, HEIGHT, ENTRY, EXIT).
+
+    Returns
+    -------
+    None
+    """
     w = settings["WIDTH"]
     h = settings["HEIGHT"]
 
     def clamp(p: tuple[int, int]) -> tuple[int, int]:
+        """Force un point (x, y) à rester dans les bornes du labyrinthe.
+
+        Parameters
+        ----------
+        p : tuple[int, int]
+            Coordonnées (x, y) à borner.
+
+        Returns
+        -------
+        tuple[int, int]
+            Coordonnées bornées.
+        """
         x, y = p
         x = max(0, min(w - 1, x))
         y = max(0, min(h - 1, y))
@@ -35,7 +70,30 @@ def normalize_points(settings: dict) -> None:
 
 
 def add_info_maze(moves: str) -> None:
+    """Ajoute des informations (ENTRY/EXIT/mouvements) à la fin de maze.txt.
+
+    Parameters
+    ----------
+    moves : str
+        Suite de mouvements cardinaux (N, S, E, W).
+
+    Returns
+    -------
+    None
+    """
     def my_trim(s: str) -> str:
+        """Supprime le premier et le dernier caractère d'une chaîne.
+
+        Parameters
+        ----------
+        s : str
+            Chaîne à tronquer.
+
+        Returns
+        -------
+        str
+            Chaîne sans son premier et son dernier caractère.
+        """
         return s[1:-1]
     conf = parse_config_file("config.txt")
     entry = str(conf.get("ENTRY"))
@@ -52,7 +110,28 @@ def add_info_maze(moves: str) -> None:
 
 
 def read_maze_bits(path: Any = "maze.txt") -> list[list[int]]:
+    """Lit un labyrinthe encodé en hexadécimal et retourne une grille de bits.
 
+    Le fichier est lu ligne par ligne jusqu'à une ligne vide. Chaque caractère
+    hexadécimal est converti en entier (base 16) et représente un masque de
+    murs pour une cellule.
+
+    Parameters
+    ----------
+    path : Any, default="maze.txt"
+        Chemin du fichier (le code accepte un chemin "str-like").
+
+    Returns
+    -------
+    list[list[int]]
+        Grille (hauteur x largeur) d'entiers.
+
+    Raises
+    ------
+    ValueError
+        Si le fichier ne contient aucune ligne de grille ou si les lignes
+        n'ont pas toutes la même longueur.
+    """
     grid: list[list[int]] = []
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
@@ -83,6 +162,37 @@ def show_maze_walls(
     beautify: bool = False,
     show_closed: bool = False,
 ) -> tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]:
+    """Construit un rendu du labyrinthe et calcule le chemin solution.
+
+    Cette fonction :
+    - lit la configuration (ENTRY/EXIT, options) ;
+    - lit le labyrinthe encodé en bits depuis un fichier ;
+    - produit une matrice de caractères (murs/espaces) ;
+    - calcule un chemin avec A* et une chaîne de mouvements ;
+    - optionnellement embellit les jonctions.
+
+    Parameters
+    ----------
+    fichier : str, default="maze.txt"
+        Fichier contenant la grille hexadécimale.
+    symb_type : str, default="C"
+        Thème de symboles (A, B, C).
+    beautify : bool, default=False
+        Si True, remplace les points de jonction par des coins/croix.
+    show_closed : bool, default=False
+        Si True, marque les cellules totalement fermées.
+
+    Returns
+    -------
+    tuple[list[str], str, list[tuple[int, int]], set[tuple[int, int]]]
+        (lignes du rendu, mouvements, chemin (cellules), cellules fermées).
+
+    Raises
+    ------
+    ValueError
+        Si la configuration est invalide, si ENTRY/EXIT sont hors limites,
+        si le fichier est vide, ou si aucun chemin n'existe.
+    """
     conf_file = parse_config_file("config.txt")
     if not conf_file:
         raise ValueError("config.txt invalide ou illisible")
@@ -160,7 +270,27 @@ def show_maze_walls(
 
 
 def launcher() -> None:
+    """Point d'entrée du lanceur curses.
+
+    Démarre l'interface curses via :func:`curses.wrapper` et orchestre le flux
+    suivant : écran titre -> menu -> options -> génération -> jeu.
+
+    Returns
+    -------
+    None
+    """
     def _run(stdscr: Any) -> None:
+        """Boucle principale curses (appelée par curses.wrapper).
+
+        Parameters
+        ----------
+        stdscr : Any
+            Fenêtre principale curses.
+
+        Returns
+        -------
+        None
+        """
         title_screen(stdscr, duration=3.0, fps=30)
 
         conf = parse_config_file("config.txt")
@@ -180,6 +310,20 @@ def launcher() -> None:
         }
 
         def regenerate() -> None:
+            """Génère un nouveau labyrinthe à partir des paramètres courants.
+
+            Met à jour config.txt, recharge la configuration, puis écrit un
+            nouveau fichier de labyrinthe.
+
+            Returns
+            -------
+            None
+
+            Raises
+            ------
+            ValueError
+                Si la configuration devient invalide après écriture.
+            """
             normalize_points(settings)
             stdscr.erase()
             stdscr.addstr(
@@ -213,7 +357,6 @@ def launcher() -> None:
 écriture (regenerate).")
             maze_gen(conf2, conf2.get("OUTPUT_FILE", "maze.txt"))
 
-        # 1) nouveau maze au lancement (obligatoire)
         while True:
             action = menu_screen(stdscr, title="A-MAZE-ING")
             if action == "quit":
@@ -222,7 +365,6 @@ def launcher() -> None:
             if action == "options":
                 option_screen(stdscr, settings)
                 normalize_points(settings)
-                # si tu veux que changer WIDTH/HEIGHT regen direct:
                 regenerate()
                 continue
 
@@ -232,6 +374,14 @@ def launcher() -> None:
                 def render() -> tuple[list[str], str,
                                       list[tuple[int, int]],
                                       set[tuple[int, int]]]:
+                    """Construit le rendu du labyrinthe à afficher dans le jeu.
+
+                    Returns
+                    -------
+                    tuple[list[str], str, list[tuple[int, int]],
+                    set[tuple[int, int]]]
+                        Même format que :func:`show_maze_walls`.
+                    """
                     return show_maze_walls(
                         fichier=settings["OUTPUT_FILE"],
                         symb_type=settings["SYMBOL_THEME"],

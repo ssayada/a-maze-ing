@@ -1,7 +1,26 @@
+"""Amélioration visuelle des jonctions du labyrinthe rendu.
+
+À partir d'une matrice de caractères représentant le labyrinthe, ce module
+remplace les points d'intersection par des caractères de jonction (coins,
+T, croix) selon les murs adjacents.
+"""
 from .symbol import Symbol
 
 
 def beautify_junctions(out: list[list[str]], symb_type: str) -> None:
+    """Remplace les points de jonction par des caractères plus lisibles.
+
+    Parameters
+    ----------
+    out : list[list[str]]
+        Matrice de caractères du rendu à modifier sur place.
+    symb_type : str
+        Thème de symboles (ex. "A", "B", "C") utilisé par :class:`ui.symbol.Symbol`.
+
+    Notes
+    -----
+    La fonction modifie ``out`` en place.
+    """
     symbol = Symbol(symb_type, 2)
     h = len(out)
     w = len(out[0])

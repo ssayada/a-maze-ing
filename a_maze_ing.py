@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Point d'entrée du programme.
+
+Ce script gère la présence d'un fichier de configuration (``config.txt``),
+le charge, le valide et lance l'interface curses via :func:`launcher.launcher`.
+
+Notes
+-----
+Le fichier ``config.txt`` est (re)généré avec une configuration par défaut si
+absent, puis réécrit en fin d'exécution.
+"""
 from launcher import launcher
 import sys
 from maze_gen.generator import parse_config_file, verify_config_file
@@ -6,6 +16,28 @@ from curses import error
 
 
 def main() -> None:
+        """Initialise la configuration et lance l'application.
+
+    La fonction vérifie la présence du fichier de configuration fourni en
+    argument (ou ``config.txt`` par défaut), le crée si nécessaire, puis
+    charge et valide les paramètres. Si la configuration est valide, le
+    lanceur principal est démarré.
+
+    Raises
+    ------
+    OSError
+        Erreur système lors du lancement de l'interface.
+    ValueError
+        Erreur de valeur (ex. fichier labyrinthe invalide).
+    KeyError
+        Clé de configuration manquante ou invalide.
+    IndexError
+        Données invalides lors de l'affichage ou des coordonnées.
+    FileNotFoundError
+        Fichier requis introuvable.
+    curses.error
+        Problème d'affichage lié à la taille du terminal.
+    """
     init_config = """WIDTH=25
 HEIGHT=20
 ENTRY=0,0

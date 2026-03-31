@@ -1,3 +1,4 @@
+"""Boucle d'affichage du jeu (curses) et rendu colorisé du labyrinthe."""
 import curses
 from collections.abc import Callable
 from typing import Optional
@@ -14,6 +15,18 @@ RegenerateFn = Callable[[], None]
 def _path_to_out_positions(
         path: list[tuple[int, int]]) -> set[tuple[int, int]]:
     pos: set[tuple[int, int]] = set()
+    """Convertit un chemin de cellules en positions (r, c) dans le rendu.
+
+    Parameters
+    ----------
+    path : list[tuple[int, int]]
+        Chemin sous forme de coordonnées de cellules (x, y).
+
+    Returns
+    -------
+    set[tuple[int, int]]
+        Positions (r, c) à colorer dans la matrice de rendu "out".
+    """
     if not path:
         return pos
 
@@ -38,6 +51,26 @@ def _path_to_out_positions(
 
 
 def _safe_addch(stdscr: Any, y: int, x: int, ch: str, attr: int = 0) -> bool:
+    """Ajoute un caractère dans curses sans faire échouer l'affichage.
+
+    Parameters
+    ----------
+    stdscr : Any
+        Fenêtre curses.
+    y : int
+        Ligne.
+    x : int
+        Colonne.
+    ch : str
+        Caractère à afficher.
+    attr : int, default=0
+        Attribut curses (couleur, gras, etc.).
+
+    Returns
+    -------
+    bool
+        True si l'ajout a réussi, sinon False.
+    """
     try:
         stdscr.addch(y, x, ch, attr)
         return True
@@ -55,6 +88,32 @@ def game_screen(
     wall_color_name: str = "Blanc",
     title: str = "A-MAZE-ING",
 ) -> str:
+    """Affiche le labyrinthe dans curses et gère les interactions utilisateur.
+
+    Parameters
+    ----------
+    stdscr : Any
+        Fenêtre principale curses.
+    render_fn : RenderFn
+        Fonction qui retourne (maze_lines, moves, path, closed_cells).
+    on_regenerate : RegenerateFn | None, default=None
+        Callback appelé lors d'une régénération (touche R).
+    path_color_name : str, default="Rouge"
+        Couleur du chemin solution.
+    entry_color_name : str, default="Vert"
+        Couleur de l'entrée.
+    exit_color_name : str, default="Jaune"
+        Couleur de la sortie.
+    wall_color_name : str, default="Blanc"
+        Couleur des murs.
+    title : str, default="A-MAZE-ING"
+        Titre affiché.
+
+    Returns
+    -------
+    str
+        Action de sortie (ex. "back").
+    """
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
