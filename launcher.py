@@ -186,14 +186,25 @@ def launcher() -> None:
                 2, 2, "Generating maze... please wait", curses.A_BOLD
                 )
             stdscr.refresh()
-            new_conf = {
-                "WIDTH": settings["WIDTH"],
-                "HEIGHT": settings["HEIGHT"],
-                "ENTRY": settings["ENTRY"],
-                "EXIT": settings["EXIT"],
-                "OUTPUT_FILE": settings["OUTPUT_FILE"],
-                "PERFECT": settings["PERFECT"],
-            }
+            if "SEED" in conf.keys():
+                new_conf = {
+                    "WIDTH": settings["WIDTH"],
+                    "HEIGHT": settings["HEIGHT"],
+                    "ENTRY": settings["ENTRY"],
+                    "EXIT": settings["EXIT"],
+                    "OUTPUT_FILE": settings["OUTPUT_FILE"],
+                    "PERFECT": settings["PERFECT"],
+                    "SEED": conf['SEED']
+                }
+            else:
+                new_conf = {
+                    "WIDTH": settings["WIDTH"],
+                    "HEIGHT": settings["HEIGHT"],
+                    "ENTRY": settings["ENTRY"],
+                    "EXIT": settings["EXIT"],
+                    "OUTPUT_FILE": settings["OUTPUT_FILE"],
+                    "PERFECT": settings["PERFECT"]
+                }
 
             write_config_file(new_conf, "config.txt")
             conf2 = parse_config_file("config.txt")

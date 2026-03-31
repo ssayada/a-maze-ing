@@ -1,4 +1,4 @@
-from random import randint, shuffle
+from random import randint, shuffle, seed
 
 
 class Maze:
@@ -11,6 +11,8 @@ class Maze:
     backtrack: list
     forty_two: list
     left_top_42: tuple
+    new_seed: int | None
+
 
     def __init__(self, config: dict) -> None:
         self.config = config
@@ -38,6 +40,11 @@ class Maze:
         ]
         self.left_top_42 = (int((self.config['WIDTH'] / 2) - 3),
                             int((self.config['HEIGHT'] / 2) - 2))
+        if "SEED" in config.keys():
+            self.new_seed = self.config['SEED']
+        else:
+            self.new_seed = None
+        seed(self.new_seed)
 
     def get_maze(self) -> list:
         return self.maze

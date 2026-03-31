@@ -57,6 +57,8 @@ def parse_config_file(config_file: str) -> dict:
                         configs[key] = (int(x), int(y))
                     elif key == "PERFECT":
                         configs[key] = _parse_bool(value)
+                    elif key == "SEED":
+                        configs.update({key: int(value)})
 
     except Exception as e:
         print(f"Invalid '{config_file}' file: {e}")
@@ -80,14 +82,25 @@ def verify_config_file(configs: dict) -> bool:
 
 
 def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
-    lines = [
-        f"WIDTH={int(configs['WIDTH'])}",
-        f"HEIGHT={int(configs['HEIGHT'])}",
-        f"ENTRY={configs['ENTRY'][0]},{configs['ENTRY'][1]}",
-        f"EXIT={configs['EXIT'][0]},{configs['EXIT'][1]}",
-        f"OUTPUT_FILE={configs.get('OUTPUT_FILE', 'maze.txt')}",
-        f"PERFECT={'True' if configs.get('PERFECT', True) else 'False'}",
-    ]
+    if "SEED" in configs.keys():
+        lines = [
+            f"WIDTH={int(configs['WIDTH'])}",
+            f"HEIGHT={int(configs['HEIGHT'])}",
+            f"ENTRY={configs['ENTRY'][0]},{configs['ENTRY'][1]}",
+            f"EXIT={configs['EXIT'][0]},{configs['EXIT'][1]}",
+            f"OUTPUT_FILE={configs.get('OUTPUT_FILE', 'maze.txt')}",
+            f"PERFECT={'True' if configs.get('PERFECT', True) else 'False'}",
+            f"SEED={configs['SEED']}"
+        ]
+    else:
+        lines = [
+            f"WIDTH={int(configs['WIDTH'])}",
+            f"HEIGHT={int(configs['HEIGHT'])}",
+            f"ENTRY={configs['ENTRY'][0]},{configs['ENTRY'][1]}",
+            f"EXIT={configs['EXIT'][0]},{configs['EXIT'][1]}",
+            f"OUTPUT_FILE={configs.get('OUTPUT_FILE', 'maze.txt')}",
+            f"PERFECT={'True' if configs.get('PERFECT', True) else 'False'}",
+        ]
     with open(config_file, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
