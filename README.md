@@ -193,7 +193,7 @@ It contains the Maze class that has all methods required to build the randomly g
 - Maze generation techniques: depth-first/backtracking family of approaches
 
 ### AI usage (required)
-- AI was used to **draft and structure this README.md** according to the provided 42 requirements (sections, wording, checklists).
+- AI was used to **draft and structure this README.md and the docstrings** according to the provided 42 requirements (sections, wording, checklists).
 - No AI-generated code was added automatically to the repository as part of writing this README.
 
 ---

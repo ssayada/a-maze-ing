@@ -167,11 +167,8 @@ def option_screen(stdscr: Any, settings: dict) -> dict:
         sx, sy = settings["EXIT"]
 
         start_y = 7
-        x_left = 2
-        for i, f in enumerate(fields):
-            selected = (i == idx)
-            attr = curses.A_REVERSE if selected else curses.A_NORMAL
-
+        display_lines: list[str] = []
+        for f in fields:
             if f == "Back":
                 line = "Back"
             elif f == "WIDTH":
@@ -187,25 +184,48 @@ def option_screen(stdscr: Any, settings: dict) -> dict:
             elif f == "EXIT_Y":
                 line = f"EXIT_Y: {sy}"
             elif f == "PERFECT":
-                line = f"PERFECT: \
-{'ON' if settings.get('PERFECT', True) else 'OFF'}"
+                line = "PERFECT: " + (
+                    "ON" if settings.get("PERFECT", True) else "OFF"
+                )
             elif f == "COLOR_42":
-                line = f"COLOR_42: \
-{'ON' if settings.get('COLOR_42', False) else 'OFF'}"
+                line = "COLOR_42: " + (
+                    "ON" if settings.get("COLOR_42", False) else "OFF"
+                )
             elif f == "WALL_COLOR":
-                line = f"WALL_COLOR: \
-{settings.get('WALL_COLOR', 'Blanc')}"
+                line = f"WALL_COLOR: {settings.get('WALL_COLOR', 'Blanc')}"
             elif f == "SYMBOL_THEME":
-                line = f"SYMBOL_THEME: \
-{settings['SYMBOL_THEME']}"
+                line = f"SYMBOL_THEME: {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
-                line = f"BEAUTIFY: \
-{'ON' if settings['BEAUTIFY'] else 'OFF'}"
+                line = "BEAUTIFY: " + (
+                    "ON" if settings["BEAUTIFY"] else "OFF"
+                )
             elif f == "PATH_COLOR":
                 line = f"PATH_COLOR: {settings['PATH_COLOR']}"
+            else:
+                line = str(f)
 
-            stdscr.addstr(
-                start_y + i, x_left + 55, line[: max(0, w - x_left - 1)], attr)
+            display_lines.append(line)
+        block_width = max(
+            (max((len(part) for part in line.splitlines()), default=0)
+             for line in display_lines),
+            default=0,
+        )
+        x_left = max(0, (w - block_width) // 2)
+        y = start_y
+        for i, line in enumerate(display_lines):
+            selected = (i == idx)
+            attr = curses.A_REVERSE if selected else curses.A_NORMAL
+            for part_idx, part in enumerate(line.splitlines() or [""]):
+                if y >= h - 1:
+                    break
+                part_attr = attr if part_idx == 0 else curses.A_NORMAL
+                try:
+                    stdscr.addstr(y, x_left, part[: max(0, w - x_left - 1)],
+                                  part_attr)
+                except curses.error:
+                    pass
+
+                y += 1
 
         stdscr.refresh()
 
