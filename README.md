@@ -138,6 +138,14 @@ Several parts are reusable as standalone modules:
 
 ---
 
+## mazegen-1.0.0.tar.gz module
+
+To rebuild the .gz file you can use the command "python3 -m build".
+To install and use the .gz file later you can use the command "make install".
+It contains the Maze class that has all methods required to build the randomly generated maze.
+
+---
+
 ## Team and project management (required)
 
 ### Team members & roles
