@@ -163,7 +163,7 @@ def launcher() -> None:
     def _run(stdscr: Any) -> None:
         title_screen(stdscr, duration=3.0, fps=30)
 
-        conf = parse_config_file("init_config.txt")
+        conf = parse_config_file("config.txt")
         settings = {
             "WIDTH": int(conf["WIDTH"]),
             "HEIGHT": int(conf["HEIGHT"]),
@@ -206,11 +206,6 @@ def launcher() -> None:
         while True:
             action = menu_screen(stdscr, title="A-MAZE-ING")
             if action == "quit":
-                with open("init_config.txt", "r") as init_file:
-                    content = init_file.read()
-                    with open("config.txt", "w") as file:
-                        for line in content:
-                            file.write(f"{line}")
                 return
 
             if action == "options":
