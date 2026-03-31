@@ -27,35 +27,35 @@ class Maze:
     def get_maze(self) -> list:
         return self.maze
 
-    def get_walls(self, x, y) -> str:
-        return self.maze[y][x]
+    def get_walls(self, x: int, y: int) -> str:
+        return str(self.maze[y][x])
 
     def get_hexa(self) -> list:
         return self.hexa
 
-    def get_entry(self) -> dict:
-        return self.config['ENTRY']
+    def get_entry(self) -> tuple:
+        return tuple(self.config['ENTRY'])
 
-    def get_exit(self) -> dict:
-        return self.config['EXIT']
+    def get_exit(self) -> tuple:
+        return tuple(self.config['EXIT'])
 
     def get_width(self) -> int:
-        return self.config['WIDTH']
+        return int(self.config['WIDTH'])
 
     def get_height(self) -> int:
-        return self.config['HEIGHT']
+        return int(self.config['HEIGHT'])
 
-    def is_visited(self, x, y) -> bool:
+    def is_visited(self, x: int, y: int) -> bool:
         if self.maze[y][x] != 'F':
             return True
         return False
 
-    def is_forty_two(self, x, y) -> bool:
+    def is_forty_two(self, x: int, y: int) -> bool:
         if self.maze[y][x] not in self.hexa:
             return True
         return False
 
-    def adjacents_visited(self, x, y) -> bool:
+    def adjacents_visited(self, x: int, y: int) -> bool:
         if y < self.config['HEIGHT'] - 1:
             if not self.is_visited(x, y + 1):
                 return False
@@ -70,7 +70,7 @@ class Maze:
                 return False
         return True
 
-    def north_possible(self, x, y) -> bool:
+    def north_possible(self, x: int, y: int) -> bool:
         if y <= 0:
             return False
         if self.is_visited(x, y - 1):
@@ -79,17 +79,17 @@ class Maze:
             return False
         return True
 
-    def break_north(self, x, y) -> None:
+    def break_north(self, x: int, y: int) -> None:
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 1]
 
-    def north_open(self, x, y) -> bool:
+    def north_open(self, x: int, y: int) -> bool:
         if self.is_forty_two(x, y):
             return False
         if self.hexa.index(self.maze[y][x]) % 2 == 0 and y > 0:
             return True
         return False
 
-    def east_possible(self, x, y) -> bool:
+    def east_possible(self, x: int, y: int) -> bool:
         if x >= self.config['WIDTH'] - 1:
             return False
         if self.is_visited(x + 1, y):
@@ -98,10 +98,10 @@ class Maze:
             return False
         return True
 
-    def break_east(self, x, y) -> None:
+    def break_east(self, x: int, y: int) -> None:
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 2]
 
-    def east_open(self, x, y) -> bool:
+    def east_open(self, x: int, y: int) -> bool:
         if self.is_forty_two(x, y):
             return False
         if ((0 <= self.hexa.index(self.maze[y][x]) <= 1 or 4
@@ -112,7 +112,7 @@ class Maze:
             return True
         return False
 
-    def south_possible(self, x, y) -> bool:
+    def south_possible(self, x: int, y: int) -> bool:
         if y >= self.config['HEIGHT'] - 1:
             return False
         if self.is_visited(x, y + 1):
@@ -121,10 +121,10 @@ class Maze:
             return False
         return True
 
-    def break_south(self, x, y) -> None:
+    def break_south(self, x: int, y: int) -> None:
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 4]
 
-    def south_open(self, x, y) -> bool:
+    def south_open(self, x: int, y: int) -> bool:
         if self.is_forty_two(x, y):
             return False
         if (
@@ -134,7 +134,7 @@ class Maze:
             return True
         return False
 
-    def west_possible(self, x, y) -> bool:
+    def west_possible(self, x: int, y: int) -> bool:
         if x <= 0:
             return False
         if self.is_visited(x - 1, y):
@@ -143,10 +143,10 @@ class Maze:
             return False
         return True
 
-    def break_west(self, x, y) -> None:
+    def break_west(self, x: int, y: int) -> None:
         self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y][x]) - 8]
 
-    def west_open(self, x, y) -> bool:
+    def west_open(self, x: int, y: int) -> bool:
         if self.is_forty_two(x, y):
             return False
         if (0 <= self.hexa.index(self.maze[y][x])
@@ -154,7 +154,7 @@ class Maze:
             return True
         return False
 
-    def move_back(self, x, y) -> tuple:
+    def move_back(self, x: int, y: int) -> tuple:
         while self.adjacents_visited(x, y):
             direction = self.backtrack.pop()
             if direction == 'N':
@@ -210,7 +210,7 @@ class Maze:
                     return False
         return True
 
-    def open_path_perfect(self, x, y) -> None:
+    def open_path_perfect(self, x: int, y: int) -> None:
         while True:
             move = randint(0, 3)
             if move == 0:

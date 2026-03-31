@@ -3,7 +3,7 @@ from pydantic import BaseModel, field_validator, ValidationError
 
 # Custom error if ENTRY and EXIT are on the same coordinates
 class EntryExitError(Exception):
-    def __init__(self, message) -> None:
+    def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
 
@@ -19,7 +19,7 @@ class ConfigModel(BaseModel):
 
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod
-    def parse_coords(cls, v):
+    def parse_coords(cls, v: tuple) -> tuple:
         if isinstance(v, str):
             x, y = v.split(",")
             return (int(x), int(y))

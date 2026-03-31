@@ -2,7 +2,7 @@
 from launcher import launcher
 
 
-def main():
+def main() -> None:
     try:
         launcher()
     except OSError as e:

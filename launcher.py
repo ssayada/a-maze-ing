@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 import curses
-"""from typing import Any"""
+from typing import Any
 from maze_gen.ourtypes import Dir
 from solver import a_star, path_to_moves
 from ui.symbol import Symbol
@@ -52,7 +52,7 @@ def add_info_maze(moves: str) -> None:
         file.write(f"{moves}")
 
 
-def read_maze_bits(path="maze.txt") -> list[list[int]]:
+def read_maze_bits(path: Any = "maze.txt") -> list[list[int]]:
 
     grid: list[list[int]] = []
     with open(path, "r", encoding="utf-8") as f:
@@ -161,7 +161,7 @@ def show_maze_walls(
 
 
 def launcher() -> None:
-    def _run(stdscr):
+    def _run(stdscr: Any) -> None:
         title_screen(stdscr, duration=3.0, fps=30)
 
         conf = parse_config_file("init_config.txt")
@@ -217,7 +217,9 @@ def launcher() -> None:
                 continue
 
             if action == "start":
-                def render():
+                def render() -> tuple[list[str], str,
+                                      list[tuple[int, int]],
+                                      set[tuple[int, int]]]:
                     return show_maze_walls(
                         fichier=settings["OUTPUT_FILE"],
                         symb_type=settings["SYMBOL_THEME"],
