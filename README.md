@@ -149,7 +149,7 @@ It contains the Maze class that has all methods required to build the randomly g
 ## Team and project management (required)
 
 ### Team members & roles
-- **ssayada**
+- **ssayada and Avally**
   - Maze generation logic & file format (hex encoding) by Avally
   - Project packaging & Makefile tooling by Avally
   - TUI integration (menu/options/game screens) by Ssayada
@@ -159,8 +159,9 @@ It contains the Maze class that has all methods required to build the randomly g
 
 ### Planning (anticipated vs actual)
 - Initial plan:
-  - Implement config parsing → maze generation → display in terminal.
+  - Implement config parsing → maze generation → display in terminal as ASCII symbols.
 - Evolution:
+  - Implement curses for displays
   - Added options screen (colors/themes, perfect/imperfect, dimensions).
   - Added A\* solver and path visualization toggle (`P`).
   - Added regeneration workflow (`R`) and config rewrite.
