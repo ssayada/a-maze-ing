@@ -4,11 +4,12 @@ CONFIG = config.txt
 
 # Commandes
 PYTHON = python3
-PIP = pip3
+PIP = pip
+MAZEGEN = mazegen-1.0.0.tar.gz
 
 #Install dependencies
 install:
-	$(PIP) install -r requirements.txt
+	$(PYTHON) -m $(PIP) install --force-reinstall $(MAZEGEN)
 
 run:
 	$(PYTHON) $(NAME) $(CONFIG)
@@ -26,6 +27,9 @@ lint:
 lint-strict:
 	$(PYTHON) flake8 .
 	mypy --strict .
+
+debug:
+	$(PYTHON) -m pdb a_maze_ing.py config.txt
 
 package:
 	$(PYTHON) -m build

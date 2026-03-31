@@ -1,23 +1,16 @@
 [project]
-name = "a-maze-ing"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+name = "mazegen"
+version = "1.0.0"
+description = "A reusable maze generator module"
 requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.12.5",
+	"wheel>=0.40.0"
 ]
 
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = "setuptools.backends.legacy:build"
-
-[project]
-name = "mazegen"
-version = "1.0.0"
-description = "A reusable maze generator module"
-requires-python = ">=3.10"
-dependencies = []
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
