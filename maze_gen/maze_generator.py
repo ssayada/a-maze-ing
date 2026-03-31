@@ -1,3 +1,4 @@
+from time import sleep
 from random import randint, shuffle
 
 
@@ -9,6 +10,8 @@ class Maze:
     hexa: list
     config: dict
     backtrack: list
+    forty_two: list
+    left_top_42: tuple
 
     def __init__(self, config: dict) -> None:
         self.config = config
@@ -23,6 +26,19 @@ class Maze:
             '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
             ]
         self.backtrack = []
+        self.forty_two = [
+            ['G', ['8', '9', 'A', 'B', 'C', 'D', 'E'], 'F',
+             ['2', '3', '6', '7', 'A', 'B', 'E'], 'G', 'G', 'G'],
+            ['G', ['C', 'D', 'E'],
+             ['4', '5', '6', '7', 'C', 'D', 'E'], 'F', 'D', '7', 'G'],
+            ['G', 'G', 'G', ['A', 'B', 'E'], 'G', 'G', 'G'],
+            [['1', '3', '5', '7', '9', 'B', 'D'],
+             ['3', '7', 'B'], 'G', ['A', 'B', 'E'], 'G', 'D', '7'],
+            ['F', ['2', '3', '6', '7', 'A', 'B', 'D', 'E'],
+             'G', ['A', 'B', 'E'], 'G', 'G', 'G']
+        ]
+        self.left_top_42 = (int((self.config['WIDTH'] / 2) - 3),
+                       int((self.config['HEIGHT'] / 2) - 2))
 
     def get_maze(self) -> list:
         return self.maze
@@ -52,6 +68,12 @@ class Maze:
 
     def is_forty_two(self, x: int, y: int) -> bool:
         if self.maze[y][x] not in self.hexa:
+            return True
+        return False
+
+    def is_in_forty_two(self, x: int, y: int) -> bool:
+        if (self.left_top_42[0] <= x < self.left_top_42[0] + 5
+            and self.left_top_42[1] <= y < self.left_top_42[1] + 7):
             return True
         return False
 
@@ -429,7 +451,7 @@ class Maze:
                 if not self.is_visited(x, y):
                     self.open_path_perfect(x, y)
         if not perfect:
-            for y in range(0, self.config['WIDTH']
+            for _ in range(0, self.config['WIDTH']
                            * self.config['HEIGHT'] // 10):
                 x = randint(0, self.config['WIDTH'] - 1)
                 y = randint(0, self.config['HEIGHT'] - 1)
@@ -442,22 +464,17 @@ class Maze:
         return False
 
     def get_forty_two(self) -> tuple:
-        return (int((self.config['WIDTH'] / 2) - 3),
-                int((self.config['HEIGHT'] / 2) - 2))
+        return ()
 
-    def create_forty_two(self, left_top_42: tuple) -> None:
-        x, y = left_top_42
+    def create_forty_two(self) -> None:
+        x, y = self.left_top_42
         base_x = x
-        forty_two = [
-            ['G', 'F', 'F', 'F', 'G', 'G', 'G'],
-            ['G', 'F', 'F', 'F', 'D', '7', 'G'],
-            ['G', 'G', 'G', 'F', 'G', 'G', 'G'],
-            ['F', 'F', 'G', 'F', 'G', 'D', '7'],
-            ['F', 'F', 'G', 'F', 'G', 'G', 'G']
-        ]
-        for ll in forty_two:
+        for ll in self.forty_two:
             for c in ll:
-                self.maze[y][x] = c
+                if type(c) is str:
+                    self.maze[y][x] = c
+                else:
+                    self.maze[y][x] = 'F'
                 x += 1
             y += 1
             x = base_x
@@ -524,21 +541,41 @@ class Maze:
                     if (0 <= nx < W and 0 <= ny < H
                             and (nx, ny) in reachable
                             and not self.is_forty_two(nx, ny)):
-                        if direction == 0:
+                        if direction == 0 and not self.north_open(x, y):
                             self.break_north(x, y)
                             self.break_south(x, y - 1)
-                        elif direction == 1:
+                        elif direction == 1 and not self.east_open(x, y):
                             self.break_east(x, y)
                             self.break_west(x + 1, y)
-                        elif direction == 2:
+                        elif direction == 2 and not self.south_open(x, y):
                             self.break_south(x, y)
                             self.break_north(x, y + 1)
-                        elif direction == 3:
+                        elif direction == 3 and not self.west_open(x, y):
                             self.break_west(x, y)
                             self.break_east(x - 1, y)
                         # Mise à jour immédiate : on propage depuis (x,y)
                         reachable.add((x, y))
                         break
+
+    def verify_maze(self) -> None:
+        for y in range(self.config['HEIGHT']):
+            for x in range(self.config['WIDTH']):
+                if y > 0 and self.is_forty_two(x, y):
+                    if self.is_forty_two(x, y) and not self.is_forty_two(x, y - 1):
+                        if self.north_open(x, y) and not self.south_open(x, y - 1):
+                            self.maze[y][x] = self.hexa[self.hexa.index(self.maze[y - 1][x]) - 4]
+                if x < self.config['WIDTH'] - 1:
+                    if self.is_forty_two(x, y) and not self.is_forty_two(x + 1, y):
+                        if self.east_open(x, y) and not self.west_open(x + 1, y):
+                            self.maze[y][x + 1] = self.hexa[self.hexa.index(self.maze[y][x + 1]) - 8]
+                if y < self.config['HEIGHT'] - 1:
+                    if self.is_forty_two(x, y) and not self.is_forty_two(x, y + 1):
+                        if self.south_open(x, y) and not self.north_open(x, y + 1):
+                            self.maze[y - 1][x] = self.hexa[self.hexa.index(self.maze[y - 1][x]) - 1]
+                if x > 0:
+                    if self.is_forty_two(x, y) and not self.is_forty_two(x - 1, y):
+                        if self.west_open(x, y) and not self.east_open(x - 1, y):
+                            self.maze[y][x - 1] = self.hexa[self.hexa.index(self.maze[y][x - 1]) - 2]
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
@@ -547,15 +584,20 @@ def maze_gen(configs: dict, maze_file: str) -> None:
     '''
     maze = Maze(configs)
     if maze.forty_two_possible():
-        maze.create_forty_two(maze.get_forty_two())
+        maze.create_forty_two()
     maze.create_path()
     if configs['PERFECT']:
         maze.complete_maze(True)
     if not configs['PERFECT']:
         maze.complete_maze(False)
+    maze.verify_maze()
     maze.draw_forty_two()
     with open(maze_file, 'w') as maze_open:
         for ll in maze.get_maze():
             for c in ll:
                 maze_open.write(c)
             maze_open.write('\n')
+
+
+if __name__ == '__main__':
+    maze_gen('config.txt', 'maze.txt')
