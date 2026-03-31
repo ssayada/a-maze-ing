@@ -168,7 +168,7 @@ def launcher() -> None:
             "WIDTH": int(conf["WIDTH"]),
             "HEIGHT": int(conf["HEIGHT"]),
             "SYMBOL_THEME": "A",
-            "BEAUTIFY": True,
+            "BEAUTIFY": False,
             "PATH_COLOR": "Rouge",
             "ENTRY_COLOR": "Rouge",
             "EXIT_COLOR": "Vert",
@@ -206,6 +206,11 @@ def launcher() -> None:
         while True:
             action = menu_screen(stdscr, title="A-MAZE-ING")
             if action == "quit":
+                with open("init_config.txt", "r") as init_file:
+                    content = init_file.read()
+                    with open("config.txt", "w") as file:
+                        for line in content:
+                            file.write(f"{line}")
                 return
 
             if action == "options":
@@ -216,6 +221,7 @@ def launcher() -> None:
                 continue
 
             if action == "start":
+                regenerate()
                 def render() -> tuple[list[str], str,
                                       list[tuple[int, int]],
                                       set[tuple[int, int]]]:
