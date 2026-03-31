@@ -13,7 +13,6 @@ class Maze:
     left_top_42: tuple
     new_seed: int | None
 
-
     def __init__(self, config: dict) -> None:
         self.config = config
         self.maze = []
