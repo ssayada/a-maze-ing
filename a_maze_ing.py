@@ -10,7 +10,7 @@ def main() -> None:
         print(e)
     except ValueError as e:
         print(e)
-    except IndexError as e:
+    except IndexError:
         print("'ENTRY' or 'EXIT' in 42 logo")
     except FileNotFoundError as e:
         print(e)

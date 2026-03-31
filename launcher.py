@@ -222,6 +222,7 @@ def launcher() -> None:
 
             if action == "start":
                 regenerate()
+
                 def render() -> tuple[list[str], str,
                                       list[tuple[int, int]],
                                       set[tuple[int, int]]]:
