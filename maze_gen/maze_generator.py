@@ -3,7 +3,7 @@ from random import randint, shuffle
 
 class Maze:
     '''
-    ez
+    Class used to generate a random maze
     '''
     maze: list
     hexa: list
