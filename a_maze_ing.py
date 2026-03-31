@@ -11,7 +11,7 @@ def main() -> None:
     except ValueError as e:
         print(e)
     except IndexError as e:
-        print(e)
+        print("'ENTRY' or 'EXIT' in 42 logo")
     except FileNotFoundError as e:
         print(e)
     except KeyError:

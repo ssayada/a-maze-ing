@@ -7,3 +7,18 @@ requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.12.5",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "mazegen"
+version = "1.0.0"
+description = "A reusable maze generator module"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mazegen*"]

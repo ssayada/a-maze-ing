@@ -9,8 +9,7 @@ from ui.cinematique_launch import title_screen
 from ui.game import game_screen
 from ui.menu import menu_screen
 from ui.option import option_screen
-from maze_gen.generator import parse_config_file, write_config_file
-from maze_gen.maze_generator import maze_gen
+from maze_gen.generator import parse_config_file, write_config_file, maze_gen
 
 
 def normalize_points(settings: dict) -> None:

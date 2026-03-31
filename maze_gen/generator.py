@@ -1,4 +1,5 @@
 from pydantic import BaseModel, field_validator, ValidationError
+from maze_gen.maze_generator import Maze
 
 
 # Custom error if ENTRY and EXIT are on the same coordinates
@@ -89,3 +90,24 @@ def write_config_file(configs: dict, config_file: str = "config.txt") -> None:
     ]
     with open(config_file, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
+
+
+def maze_gen(configs: dict, maze_file: str) -> None:
+    '''
+    ez
+    '''
+    maze = Maze(configs)
+    if maze.forty_two_possible():
+        maze.create_forty_two()
+    maze.create_path()
+    if configs['PERFECT']:
+        maze.complete_maze(True)
+    if not configs['PERFECT']:
+        maze.complete_maze(False)
+    maze.verify_maze()
+    maze.draw_forty_two()
+    with open(maze_file, 'w') as maze_open:
+        for ll in maze.get_maze():
+            for c in ll:
+                maze_open.write(c)
+            maze_open.write('\n')
