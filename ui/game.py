@@ -167,7 +167,21 @@ P: Path {'ON' if show_path else 'OFF'}"
                             _safe_addch(stdscr, y, x, ch, WALL_ATTR)
                         else:
                             _safe_addch(stdscr, y, x, ch)
-
+                with open("maze.txt", "r") as file:
+                    content = file.read()
+                    if "F" not in content:
+                        msg = "Maze trop petit pour afficher le 42"
+                        msg_y = top + maze_h + 1  # une ligne sous le maze
+                        if msg_y < h - 1:
+                            try:
+                                stdscr.addstr(
+                                    msg_y,
+                                    max(0, (w - len(msg)) // 2),
+                                    msg,
+                                    curses.A_BOLD,
+                                )
+                            except curses.error:
+                                pass
             stdscr.refresh()
 
         key = stdscr.getch()
