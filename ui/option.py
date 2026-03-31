@@ -85,6 +85,7 @@ def option_screen(stdscr: Any, settings: dict) -> dict:
         sx, sy = settings["EXIT"]
 
         start_y = 7
+        x_left = 2
         for i, f in enumerate(fields):
             selected = (i == idx)
             attr = curses.A_REVERSE if selected else curses.A_NORMAL
@@ -94,35 +95,35 @@ def option_screen(stdscr: Any, settings: dict) -> dict:
             elif f == "WIDTH":
                 line = f"WIDTH: {settings['WIDTH']}"
             elif f == "HEIGHT":
-                line = f" HEIGHT: {settings['HEIGHT']}"
+                line = f"HEIGHT: {settings['HEIGHT']}"
             elif f == "ENTRY_X":
-                line = f" ENTRY_X: {ex}"
+                line = f"ENTRY_X: {ex}"
             elif f == "ENTRY_Y":
-                line = f" ENTRY_Y: {ey}"
+                line = f"ENTRY_Y: {ey}"
             elif f == "EXIT_X":
-                line = f" EXIT_X: {sx}"
+                line = f"EXIT_X: {sx}"
             elif f == "EXIT_Y":
-                line = f" EXIT_Y: {sy}"
+                line = f"EXIT_Y: {sy}"
             elif f == "PERFECT":
-                line = f"   PERFECT: \
+                line = f"PERFECT: \
 {'ON' if settings.get('PERFECT', True) else 'OFF'}"
             elif f == "COLOR_42":
-                line = f"    COLOR_42: \
+                line = f"COLOR_42: \
 {'ON' if settings.get('COLOR_42', False) else 'OFF'}"
             elif f == "WALL_COLOR":
-                line = f"        WALL_COLOR: \
+                line = f"WALL_COLOR: \
 {settings.get('WALL_COLOR', 'Blanc')}"
             elif f == "SYMBOL_THEME":
-                line = f"      SYMBOL_THEME: \
+                line = f"SYMBOL_THEME: \
 {settings['SYMBOL_THEME']}"
             elif f == "BEAUTIFY":
-                line = f"   BEAUTIFY: \
+                line = f"BEAUTIFY: \
 {'ON' if settings['BEAUTIFY'] else 'OFF'}"
             elif f == "PATH_COLOR":
-                line = f"        PATH_COLOR: {settings['PATH_COLOR']}"
+                line = f"PATH_COLOR: {settings['PATH_COLOR']}"
 
-            stdscr.addstr(start_y + i, max(0,
-                                           (w - len(line)) // 2), line, attr)
+            stdscr.addstr(
+                start_y + i, x_left + 55, line[: max(0, w - x_left - 1)], attr)
 
         stdscr.refresh()
 

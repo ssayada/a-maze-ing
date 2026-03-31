@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from launcher import launcher
+from curses import error
 
 
 def main() -> None:
@@ -15,6 +16,9 @@ def main() -> None:
         print(e)
     except KeyError:
         print("init_config.txt invalide ou illisible")
+    except error:
+        print("curses error: la taille de la fenetre est trop \
+petite pour l'affichage")
 
 
 if __name__ == "__main__":
