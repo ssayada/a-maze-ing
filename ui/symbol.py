@@ -1,4 +1,6 @@
 """Définition des jeux de caractères utilisés pour dessiner le labyrinthe."""
+
+
 class Symbol:
     """Jeu de symboles (murs, coins, entrée/sortie) pour un thème donné."""
     def __init__(self, name: str, round: int):

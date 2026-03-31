@@ -590,7 +590,7 @@ class Maze:
         return True
 
     def open_path_perfect(self, x: int, y: int) -> None:
-        """Connecte une cellule isolée à une cellule déjà visitée (mode parfait).
+        """Connecte une cellule isolée à une cellule déjà visitée(mode parfait)
 
         Parameters
         ----------
@@ -1025,7 +1025,7 @@ class Maze:
 
 
 def maze_gen(configs: dict, maze_file: str) -> None:
-    """Génère un labyrinthe à partir d'une configuration et l'écrit sur disque.
+    """Génère un labyrinthe à partir d'une configuration et l'écrit sur disque
 
     Parameters
     ----------

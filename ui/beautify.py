@@ -15,7 +15,7 @@ def beautify_junctions(out: list[list[str]], symb_type: str) -> None:
     out : list[list[str]]
         Matrice de caractères du rendu à modifier sur place.
     symb_type : str
-        Thème de symboles (ex. "A", "B", "C") utilisé par :class:`ui.symbol.Symbol`.
+        Thème de symboles(ex."A","B","C") utilisé par :class:`ui.symbol.Symbol`
 
     Notes
     -----

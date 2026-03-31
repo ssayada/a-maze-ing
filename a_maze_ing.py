@@ -16,7 +16,7 @@ from curses import error
 
 
 def main() -> None:
-        """Initialise la configuration et lance l'application.
+    """Initialise la configuration et lance l'application.
 
     La fonction vérifie la présence du fichier de configuration fourni en
     argument (ou ``config.txt`` par défaut), le crée si nécessaire, puis

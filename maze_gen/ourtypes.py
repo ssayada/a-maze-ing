@@ -13,8 +13,10 @@ class Dir(IntEnum):
     S = 4
     W = 8
 
+
 # Tuple des directions dans l'ordre N, E, S, W.
 ALL_DIRS = (Dir.N, Dir.E, Dir.S, Dir.W)
+
 
 # Vecteurs (dx, dy) associés à chaque direction.
 DIR_VECT = {
@@ -23,6 +25,7 @@ DIR_VECT = {
     Dir.S: (0, 1),
     Dir.W: (-1, 0)
 }
+
 
 # Direction opposée pour chaque direction.
 OPPOSITE = {
