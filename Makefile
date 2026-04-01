@@ -25,8 +25,8 @@ lint:
 		 --disallow-untyped-defs --check-untyped-defs .
 
 lint-strict:
-	$(PYTHON) flake8 .
-	mypy --strict .
+	$(PYTHON) -m flake8 .
+	$(PYTHON) -m mypy --strict .
 
 debug:
 	$(PYTHON) -m pdb a_maze_ing.py config.txt
